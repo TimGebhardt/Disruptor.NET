@@ -41,7 +41,7 @@ namespace Disruptor
             entryHandler.SetSequenceTrackerCallback(new SequenceTrackerCallback(this));
         }
 
-        public void setExceptionHandler(IExceptionHandler exceptionHandler)
+        public void SetExceptionHandler(IExceptionHandler exceptionHandler)
         {
             if (null == exceptionHandler)
             {

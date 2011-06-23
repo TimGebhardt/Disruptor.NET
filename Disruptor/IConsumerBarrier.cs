@@ -10,7 +10,7 @@ namespace Disruptor
     public interface IConsumerBarrier
     {
         long WaitFor(long sequence);
-        long WaitFor(long sequence, long timeout, TimeUnit units);
+        long WaitFor(long sequence, long timeout);
         long GetCursor();
         bool IsAlerted();
         void Alert();

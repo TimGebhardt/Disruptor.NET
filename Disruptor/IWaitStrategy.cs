@@ -9,12 +9,6 @@ namespace Disruptor
 
 
 {
-    public enum TimeUnit
-    {
-        Millisecond,
-        Microsecond
-    }
-
     public interface IWaitStrategy<T> where T : IEntry
     {
         /**
@@ -46,8 +40,7 @@ namespace Disruptor
      */
 
         long WaitFor(IConsumer[] consumers, RingBuffer<T> ringBuffer, IConsumerBarrier<T> barrier, long sequence,
-                     long timeout,
-                     TimeUnit units);
+                     long timeout);
 
         //  throws AlertException, InterruptedException;
 
@@ -214,7 +207,7 @@ namespace Disruptor
 
 
         public long WaitFor(IConsumer[] consumers, RingBuffer<T> ringBuffer, IConsumerBarrier<T> barrier,
-                            long sequence, long timeout, TimeUnit unit)
+                            long sequence, long timeout)
             //   throws AlertException, InterruptedException
         {
             long timeoutMs = timeout;
@@ -307,7 +300,7 @@ namespace Disruptor
 
 
         public long WaitFor(IConsumer[] consumers, RingBuffer<T> ringBuffer, IConsumerBarrier<T> barrier,
-                            long sequence, long timeout, TimeUnit units)
+                            long sequence, long timeout)
             //    throws AlertException, InterruptedException
         {
             long timeoutMs = timeout;
