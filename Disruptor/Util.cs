@@ -1,33 +1,31 @@
-/**
- * Set of common functions used by the Disruptor
- */
-
 using System.Collections.Generic;
 using System.Linq;
 
 namespace Disruptor
 {
+	///<summary>
+	///Common set of functions used by Disruptor
+	///</summary>
     public class Util
     {
-        //public static int ceilingNextPowerOfTwo(int x)
-        //{
-        //    return 1 << (32 - Integer.numberOfLeadingZeros(x - 1));
-        //}
-
         public static int CeilingNextPowerOfTwo(int x)
         {
-			//TODO: Look at Java code to see if this matches Java output
-            int value = 1;
+			//This isn't the fastest way to calculate it, but it's clear
+			//and it's probably not called a lot for a particular program
+			
+            int retval = 1;
 
-            while (value < x)
-                value *= 2;
+            while (retval < x)
+                retval *= 2;
 
-            return value;
+            return retval;
         }
 
-        // Get the minimum sequence from an array of {@link IConsumer}s.
-        // @param consumers to compare.
-        //@return the minimum sequence found or Long.MAX_VALUE if the array is empty.
+		///<summary>
+		/// Get the minimum Sequence from a collection of IConsumers
+		///</summary>
+		///<param name="consumers">The consumers to compare</param>
+		///<returns>The minimum sequence found, or long.MaxValue if the collection is empty</returns>
         public static long GetMinimumSequence(IEnumerable<IConsumer> consumers)
         {
 			if(consumers.FirstOrDefault() == null)

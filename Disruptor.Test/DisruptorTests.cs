@@ -2,7 +2,7 @@ using System;
 using System.Threading;
 using NUnit.Framework;
 
-namespace Disruptor.Tests
+namespace Disruptor.Test
 {
     [TestFixture]
     public class DisruptorTests
