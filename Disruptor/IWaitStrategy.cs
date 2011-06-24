@@ -179,7 +179,7 @@ namespace Disruptor
 
             if (0 == consumers.Length)
             {
-                while ((availableSequence = ringBuffer.GetCursor()) < sequence)
+                while ((availableSequence = ringBuffer.Cursor) < sequence)
                 {
                     if (barrier.IsAlerted())
                     {
@@ -216,7 +216,7 @@ namespace Disruptor
 
             if (0 == consumers.Length)
             {
-                while ((availableSequence = ringBuffer.GetCursor()) < sequence)
+                while ((availableSequence = ringBuffer.Cursor) < sequence)
                 {
                     if (barrier.IsAlerted())
                     {
@@ -276,7 +276,7 @@ namespace Disruptor
 
             if (0 == consumers.Length)
             {
-                while ((availableSequence = ringBuffer.GetCursor()) < sequence)
+                while ((availableSequence = ringBuffer.Cursor) < sequence)
                 {
                     if (barrier.IsAlerted())
                     {
@@ -309,7 +309,7 @@ namespace Disruptor
 
             if (0 == consumers.Length)
             {
-                while ((availableSequence = ringBuffer.GetCursor()) < sequence)
+                while ((availableSequence = ringBuffer.Cursor) < sequence)
                 {
                     if (barrier.IsAlerted())
                     {

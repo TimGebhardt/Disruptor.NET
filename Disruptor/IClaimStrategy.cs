@@ -28,7 +28,7 @@ namespace Disruptor
 
         public void WaitForCursor(long sequence, IRingBuffer ringBuffer)
         {
-            while (ringBuffer.GetCursor() != sequence)
+            while (ringBuffer.Cursor != sequence)
             {
                 // busy spin
             }

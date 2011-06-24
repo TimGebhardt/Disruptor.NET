@@ -14,12 +14,8 @@ namespace Disruptor
         {
             _ringBuffer = ringBuffer;
         }
-
-
-        public long GetSequence()
-        {
-            return _ringBuffer.GetCursor();
-        }
+		
+		public long Sequence { get { return _ringBuffer.Cursor; } }
 
 
         public void Halt()

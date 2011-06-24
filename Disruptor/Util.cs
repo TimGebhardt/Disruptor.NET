@@ -16,6 +16,7 @@ namespace Disruptor
 
         public static int CeilingNextPowerOfTwo(int x)
         {
+			//TODO: Look at Java code to see if this matches Java output
             int value = 1;
 
             while (value < x)
@@ -29,10 +30,9 @@ namespace Disruptor
         //@return the minimum sequence found or Long.MAX_VALUE if the array is empty.
         public static long GetMinimumSequence(IEnumerable<IConsumer> consumers)
         {
-            return consumers
-                .Select(consumer => consumer.GetSequence())
-                .Concat(new[] {long.MaxValue})
-                .Min();
+			if(consumers.FirstOrDefault() == null)
+				return long.MaxValue;
+            return consumers.Min(consumer => consumer.Sequence);
         }
     }
 }

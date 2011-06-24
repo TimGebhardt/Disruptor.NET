@@ -6,6 +6,7 @@
  */
 
 using System;
+using System.Threading;
 
 namespace Disruptor
 {
@@ -15,9 +16,15 @@ namespace Disruptor
         public long p1, p2, p3, p4, p5, p6, p7; // cache line padding
         private volatile bool _running = true;
         public long p8, p9, p10, p11, p12, p13, p14; // cache line padding
-        private /*volatile*/ long _sequence = -1L;
+        private long _sequence = -1L;
         public long p15, p16, p17, p18, p19, p20, p21;
-
+		
+		public long Sequence 
+		{
+			get { return Thread.VolatileRead(ref _sequence); }
+			private set { Thread.VolatileWrite(ref _sequence, value); }
+		}
+		
         private readonly IConsumerBarrier<T> _consumerBarrier;
         private readonly IBatchHandler<T> _handler;
         private readonly bool _noSequenceTracker;
@@ -56,13 +63,6 @@ namespace Disruptor
             return _consumerBarrier;
         }
 
-
-        public long GetSequence()
-        {
-            return _sequence;
-        }
-
-
         public void Halt()
         {
             _running = false;
@@ -79,7 +79,7 @@ namespace Disruptor
             {
                 try
                 {
-                    long nextSequence = _sequence + 1;
+                    long nextSequence = Sequence + 1;
                     long availableSeq = _consumerBarrier.WaitFor(nextSequence);
 
                     for (long i = nextSequence; i <= availableSeq; i++)
@@ -89,13 +89,13 @@ namespace Disruptor
 
                         if (_noSequenceTracker)
                         {
-                            _sequence = entry.GetSequence();
+                            Sequence = entry.GetSequence();
                         }
                     }
 
                     _handler.OnEndOfBatch();
                 }
-                catch (AlertException ex)
+                catch (AlertException)
                 {
                     // Wake up from blocking wait and check if we should continue to run
                 }
@@ -104,7 +104,7 @@ namespace Disruptor
                     _exceptionHandler.Handle(ex, entry);
                     if (_noSequenceTracker)
                     {
-                        _sequence = entry.GetSequence();
+                        Sequence = entry.GetSequence();
                     }
                 }
             }
@@ -123,7 +123,7 @@ namespace Disruptor
 
             public void OnCompleted(long sequence)
             {
-                _batchConsumer._sequence = sequence;
+                _batchConsumer.Sequence = sequence;
             }
         }
     }

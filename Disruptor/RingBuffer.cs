@@ -11,8 +11,8 @@ namespace Disruptor
 {
     public interface IRingBuffer
     {
-        int GetCapacity();
-        long GetCursor();
+        int Capacity { get; }
+        long Cursor { get; }
     }
 
     public interface IRingBuffer<T> : IRingBuffer where T : IEntry
@@ -25,15 +25,19 @@ namespace Disruptor
 
     public class RingBuffer<T> : IRingBuffer<T> where T : IEntry
     {
-        /** Set to -1 as sequence starting point */
-        public /*volatile*/ const long InitialCursorValue = -1L;
+        public const long InitialCursorValue = -1L;
 
         public long p1, p2, p3, p4, p5, p6, p7; // cache line padding
 
-        private /*volatile*/ long _cursor = InitialCursorValue;
+        private long _cursor = InitialCursorValue;
 
         public long p8, p9, p10, p11, p12, p13, p14; // cache line padding
-
+		
+		public long Cursor
+		{
+			get { return Thread.VolatileRead(ref _cursor); }
+			private set { Thread.VolatileWrite(ref _cursor, value); }
+		}
 
         private readonly T[] _entries;
         private readonly int _ringModMask;
@@ -77,16 +81,8 @@ namespace Disruptor
         {
             return new ForceFillConsumerTrackingProducerBarrier(this, consumersToTrack);
         }
-
-        public int GetCapacity()
-        {
-            return _entries.Length;
-        }
-
-        public long GetCursor()
-        {
-            return _cursor;
-        }
+		
+		public int Capacity { get { return _entries.Length; } }
 
         public T GetEntry(long sequence)
         {
@@ -143,7 +139,7 @@ namespace Disruptor
 
             public long GetCursor()
             {
-                return _ringBuffer._cursor;
+                return _ringBuffer.Cursor;
             }
 
 
@@ -201,14 +197,14 @@ namespace Disruptor
             {
                 long sequence = entry.GetSequence();
                 _ringBuffer._claimStrategy.WaitForCursor(sequence - 1L, _ringBuffer);
-                _ringBuffer._cursor = sequence;
+                _ringBuffer.Cursor = sequence;
                 _ringBuffer._waitStrategy.SignalAll();
             }
 
 
             public long GetCursor()
             {
-                return _ringBuffer._cursor;
+                return _ringBuffer.Cursor;
             }
 
             private void EnsureConsumersAreInRange(long sequence)
@@ -257,14 +253,14 @@ namespace Disruptor
             {
                 long sequence = entry.GetSequence();
                 _ringBuffer._claimStrategy.SetSequence(sequence + 1L);
-                _ringBuffer._cursor = sequence;
+                _ringBuffer.Cursor = sequence;
                 _ringBuffer._waitStrategy.SignalAll();
             }
 
 
             public long GetCursor()
             {
-                return _ringBuffer._cursor;
+                return _ringBuffer.Cursor;
             }
 
             private void EnsureConsumersAreInRange(long sequence)
