@@ -22,7 +22,7 @@ namespace Disruptor
      * @throws AlertException if the status of the Disruptor has changed.
      * @throws InterruptedException if the thread is interrupted.
      */
-        long WaitFor(IConsumer[] consumers, RingBuffer<T> ringBuffer, IConsumerBarrier<T> barrier, long sequence);
+        long WaitFor(IConsumer[] consumers, IRingBuffer<T> ringBuffer, IConsumerBarrier<T> barrier, long sequence);
         //   throws AlertException, InterruptedException;
 
         /**
@@ -39,7 +39,7 @@ namespace Disruptor
      * @throws InterruptedException if the thread is interrupted.
      */
 
-        long WaitFor(IConsumer[] consumers, RingBuffer<T> ringBuffer, IConsumerBarrier<T> barrier, long sequence,
+        long WaitFor(IConsumer[] consumers, IRingBuffer<T> ringBuffer, IConsumerBarrier<T> barrier, long sequence,
                      long timeout);
 
         //  throws AlertException, InterruptedException;
@@ -61,18 +61,18 @@ namespace Disruptor
     //    private object _lock =new object();
 
 
-    //    public long WaitFor(IConsumer[] consumers, RingBuffer<T> ringBuffer, IConsumerBarrier<T> barrier, long sequence)
+    //    public long WaitFor(IConsumer[] consumers, IRingBuffer<T> ringBuffer, IConsumerBarrier<T> barrier, long sequence)
     //        //  throws AlertException, InterruptedException
     //    {
     //        long availableSequence;
-    //        if ((availableSequence = ringBuffer.GetCursor()) < sequence)
+    //        if ((availableSequence = ringBuffer.Cursor) < sequence)
     //        {
 
     //            lock (_lock)
     //            {
     //                try
     //                {
-    //                    while ((availableSequence = ringBuffer.GetCursor()) < sequence)
+    //                    while ((availableSequence = ringBuffer.Cursor) < sequence)
     //                    {
     //                        if (barrier.IsAlerted())
     //                        {
@@ -103,18 +103,18 @@ namespace Disruptor
     //    }
 
 
-    //    public long WaitFor(IConsumer[] consumers, RingBuffer<T> ringBuffer, IConsumerBarrier<T> barrier,
+    //    public long WaitFor(IConsumer[] consumers, IRingBuffer<T> ringBuffer, IConsumerBarrier<T> barrier,
     //                        long sequence, long timeout, TimeUnit units)
     //        //     throws AlertException, InterruptedException
     //    {
     //        long availableSequence;
-    //        if ((availableSequence = ringBuffer.GetCursor()) < sequence)
+    //        if ((availableSequence = ringBuffer.Cursor) < sequence)
     //        {
     //            lock (_lock)
     //            {
     //                try
     //                {
-    //                    while ((availableSequence = ringBuffer.GetCursor()) < sequence)
+    //                    while ((availableSequence = ringBuffer.Cursor) < sequence)
     //                    {
     //                        if (barrier.IsAlerted())
     //                        {
@@ -172,7 +172,7 @@ namespace Disruptor
 
     public class YieldingStrategy<T> : IWaitStrategy<T> where T : IEntry
     {
-        public long WaitFor(IConsumer[] consumers, RingBuffer<T> ringBuffer, IConsumerBarrier<T> barrier, long sequence)
+        public long WaitFor(IConsumer[] consumers, IRingBuffer<T> ringBuffer, IConsumerBarrier<T> barrier, long sequence)
             //  throws AlertException, InterruptedException
         {
             long availableSequence;
@@ -206,7 +206,7 @@ namespace Disruptor
         }
 
 
-        public long WaitFor(IConsumer[] consumers, RingBuffer<T> ringBuffer, IConsumerBarrier<T> barrier,
+        public long WaitFor(IConsumer[] consumers, IRingBuffer<T> ringBuffer, IConsumerBarrier<T> barrier,
                             long sequence, long timeout)
             //   throws AlertException, InterruptedException
         {
@@ -269,7 +269,7 @@ namespace Disruptor
 
     public class BusySpinStrategy<T> : IWaitStrategy<T> where T : IEntry
     {
-        public long WaitFor(IConsumer[] consumers, RingBuffer<T> ringBuffer, IConsumerBarrier<T> barrier, long sequence)
+        public long WaitFor(IConsumer[] consumers, IRingBuffer<T> ringBuffer, IConsumerBarrier<T> barrier, long sequence)
             //     throws AlertException, InterruptedException
         {
             long availableSequence;
@@ -299,7 +299,7 @@ namespace Disruptor
         }
 
 
-        public long WaitFor(IConsumer[] consumers, RingBuffer<T> ringBuffer, IConsumerBarrier<T> barrier,
+        public long WaitFor(IConsumer[] consumers, IRingBuffer<T> ringBuffer, IConsumerBarrier<T> barrier,
                             long sequence, long timeout)
             //    throws AlertException, InterruptedException
         {
