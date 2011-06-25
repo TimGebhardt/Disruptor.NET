@@ -187,7 +187,7 @@ namespace Disruptor
                 EnsureConsumersAreInRange(sequence);
 
                 T entry = _ringBuffer._entries[(int) sequence & _ringBuffer._ringModMask];
-                entry.SetSequence(sequence);
+                entry.Sequence = sequence;
 
                 return entry;
             }
@@ -195,7 +195,7 @@ namespace Disruptor
 
             public void Commit(T entry)
             {
-                long sequence = entry.GetSequence();
+                long sequence = entry.Sequence;
                 _ringBuffer._claimStrategy.WaitForCursor(sequence - 1L, _ringBuffer);
                 _ringBuffer.Cursor = sequence;
                 _ringBuffer._waitStrategy.SignalAll();
@@ -242,7 +242,7 @@ namespace Disruptor
                 unchecked
                 {
                     T entry = _ringBuffer._entries[(int) sequence & _ringBuffer._ringModMask];
-                    entry.SetSequence(sequence);
+                    entry.Sequence = sequence;
 
                     return entry;
                 }
@@ -251,7 +251,7 @@ namespace Disruptor
 
             public void Commit(T entry)
             {
-                long sequence = entry.GetSequence();
+                long sequence = entry.Sequence;
                 _ringBuffer._claimStrategy.SetSequence(sequence + 1L);
                 _ringBuffer.Cursor = sequence;
                 _ringBuffer._waitStrategy.SignalAll();

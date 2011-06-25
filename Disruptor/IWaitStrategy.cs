@@ -3,6 +3,7 @@
  */
 
 using System;
+using System.Diagnostics;
 using System.Threading;
 
 namespace Disruptor
@@ -56,113 +57,111 @@ namespace Disruptor
      * This strategy should be used when performance and low-latency are not as important as CPU resource.
      */
 
-    //public class BlockingStrategy<T> : IWaitStrategy<T> where T:IEntry
-    //{
-    //    private object _lock =new object();
+    public class BlockingStrategy<T> : IWaitStrategy<T> where T : IEntry
+    {
+        private object _lock = new object();
+        AutoResetEvent _waithandle = new AutoResetEvent(false);
+
+        public long WaitFor(IConsumer[] consumers, IRingBuffer<T> ringBuffer, IConsumerBarrier<T> barrier, long sequence)
+        {
+            long availableSequence;
+            if ((availableSequence = ringBuffer.Cursor) < sequence)
+            {
+
+                lock (_lock)
+                {
+                    try
+                    {
+                        while ((availableSequence = ringBuffer.Cursor) < sequence)
+                        {
+                            if (barrier.IsAlerted())
+                            {
+                                throw AlertException.ALERT_EXCEPTION;
+                            }
+
+                            _waithandle.WaitOne();
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                    }
+                }
+            }
+
+            if (0 != consumers.Length)
+            {
+                while ((availableSequence = Util.GetMinimumSequence(consumers)) < sequence)
+                {
+                    if (barrier.IsAlerted())
+                    {
+                        throw AlertException.ALERT_EXCEPTION;
+                    }
+                }
+            }
+
+            return availableSequence;
+        }
 
 
-    //    public long WaitFor(IConsumer[] consumers, IRingBuffer<T> ringBuffer, IConsumerBarrier<T> barrier, long sequence)
-    //        //  throws AlertException, InterruptedException
-    //    {
-    //        long availableSequence;
-    //        if ((availableSequence = ringBuffer.Cursor) < sequence)
-    //        {
+        public long WaitFor(IConsumer[] consumers, IRingBuffer<T> ringBuffer, IConsumerBarrier<T> barrier,
+                            long sequence, long timeout)
+        {
+            long availableSequence;
+            if ((availableSequence = ringBuffer.Cursor) < sequence)
+            {
+                lock (_lock)
+                {
+                    try
+                    {
+                        while ((availableSequence = ringBuffer.Cursor) < sequence)
+                        {
+                            if (barrier.IsAlerted())
+                            {
+                                throw AlertException.ALERT_EXCEPTION;
+                            }
 
-    //            lock (_lock)
-    //            {
-    //                try
-    //                {
-    //                    while ((availableSequence = ringBuffer.Cursor) < sequence)
-    //                    {
-    //                        if (barrier.IsAlerted())
-    //                        {
-    //                            throw AlertException.ALERT_EXCEPTION;
-    //                        }
+                            if (!_waithandle.WaitOne((int)timeout))
+                            {
+                                break;
+                            }
+                        }
+                    }
+                    catch
+                    {
+                    }
+                }
+            }
 
-    //                        consumerNotifyCondition.await();
-    //                    }
-    //                }
-    //                catch (Exception e)
-    //                {
-    //                }
-    //            }
-    //        }
+            if (0 != consumers.Length)
+            {
+                while ((availableSequence = Util.GetMinimumSequence(consumers)) < sequence)
+                {
+                    if (barrier.IsAlerted())
+                    {
+                        throw AlertException.ALERT_EXCEPTION;
+                    }
+                }
+            }
 
-    //        if (0 != consumers.Length)
-    //        {
-    //            while ((availableSequence = Util.GetMinimumSequence(consumers)) < sequence)
-    //            {
-    //                if (barrier.IsAlerted())
-    //                {
-    //                    throw AlertException.ALERT_EXCEPTION;
-    //                }
-    //            }
-    //        }
-
-    //        return availableSequence;
-    //    }
-
-
-    //    public long WaitFor(IConsumer[] consumers, IRingBuffer<T> ringBuffer, IConsumerBarrier<T> barrier,
-    //                        long sequence, long timeout, TimeUnit units)
-    //        //     throws AlertException, InterruptedException
-    //    {
-    //        long availableSequence;
-    //        if ((availableSequence = ringBuffer.Cursor) < sequence)
-    //        {
-    //            lock (_lock)
-    //            {
-    //                try
-    //                {
-    //                    while ((availableSequence = ringBuffer.Cursor) < sequence)
-    //                    {
-    //                        if (barrier.IsAlerted())
-    //                        {
-    //                            throw AlertException.ALERT_EXCEPTION;
-    //                        }
-
-    //                        if (!consumerNotifyCondition.await(timeout, units))
-    //                        {
-    //                            break;
-    //                        }
-    //                    }
-    //                }
-    //                catch
-    //                {
-    //                }
-    //            }
-    //        }
-
-    //        if (0 != consumers.Length)
-    //        {
-    //            while ((availableSequence = Util.GetMinimumSequence(consumers)) < sequence)
-    //            {
-    //                if (barrier.IsAlerted())
-    //                {
-    //                    throw AlertException.ALERT_EXCEPTION;
-    //                }
-    //            }
-    //        }
-
-    //        return availableSequence;
-    //    }
+            return availableSequence;
+        }
 
 
-    //    public void SignalAll()
-    //    {
+        public void SignalAll()
+        {
 
-    //        lock (_lock)
-    //        {
-    //            try
-    //            {
-    //                consumerNotifyCondition.SignalAll();
-    //            }
-    //           catch
-    //           {
-    //           }
-    //        }
-    //    }
-    //}
+            lock (_lock)
+            {
+                try
+                {
+                    _waithandle.Set();
+                }
+                catch
+                {
+                }
+            }
+        }
+    }
 
     /**
      * Yielding strategy that uses a Thread.yield() for {@link IConsumer}s waiting on a barrier.
@@ -172,8 +171,9 @@ namespace Disruptor
 
     public class YieldingStrategy<T> : IWaitStrategy<T> where T : IEntry
     {
+        private readonly Stopwatch _timer = Stopwatch.StartNew();
+
         public long WaitFor(IConsumer[] consumers, IRingBuffer<T> ringBuffer, IConsumerBarrier<T> barrier, long sequence)
-            //  throws AlertException, InterruptedException
         {
             long availableSequence;
 
@@ -208,10 +208,9 @@ namespace Disruptor
 
         public long WaitFor(IConsumer[] consumers, IRingBuffer<T> ringBuffer, IConsumerBarrier<T> barrier,
                             long sequence, long timeout)
-            //   throws AlertException, InterruptedException
         {
-            long timeoutMs = timeout;
-            long currentTime = CurrentTimeMillis();
+            long currentTime = _timer.ElapsedMilliseconds;
+            long cutoff = currentTime + timeout;
             long availableSequence;
 
             if (0 == consumers.Length)
@@ -224,7 +223,7 @@ namespace Disruptor
                     }
 
                     Thread.Yield();
-                    if (timeoutMs < (CurrentTimeMillis() - currentTime))
+                    if (_timer.ElapsedMilliseconds > cutoff)
                     {
                         break;
                     }
@@ -240,7 +239,7 @@ namespace Disruptor
                     }
 
                     Thread.Yield();
-                    if (timeoutMs < (CurrentTimeMillis() - currentTime))
+                    if (_timer.ElapsedMilliseconds>cutoff)
                     {
                         break;
                     }
@@ -250,11 +249,7 @@ namespace Disruptor
             return availableSequence;
         }
 
-        private long CurrentTimeMillis()
-        {
-            return DateTime.Now.Ticks/TimeSpan.TicksPerMillisecond;
-        }
-
+       
         public void SignalAll()
         {
         }
@@ -269,8 +264,9 @@ namespace Disruptor
 
     public class BusySpinStrategy<T> : IWaitStrategy<T> where T : IEntry
     {
+        private readonly Stopwatch _timer = Stopwatch.StartNew();
+
         public long WaitFor(IConsumer[] consumers, IRingBuffer<T> ringBuffer, IConsumerBarrier<T> barrier, long sequence)
-            //     throws AlertException, InterruptedException
         {
             long availableSequence;
 
@@ -301,12 +297,10 @@ namespace Disruptor
 
         public long WaitFor(IConsumer[] consumers, IRingBuffer<T> ringBuffer, IConsumerBarrier<T> barrier,
                             long sequence, long timeout)
-            //    throws AlertException, InterruptedException
         {
-            long timeoutMs = timeout;
-            long currentTime = DateTime.Now.Ticks/TimeSpan.TicksPerMillisecond;
+            long currentTime = _timer.ElapsedMilliseconds;
+            long cutoff = currentTime + timeout;
             long availableSequence;
-
             if (0 == consumers.Length)
             {
                 while ((availableSequence = ringBuffer.Cursor) < sequence)
@@ -316,7 +310,7 @@ namespace Disruptor
                         throw AlertException.ALERT_EXCEPTION;
                     }
 
-                    if (timeoutMs < (CurrentTimeMillis() - currentTime))
+                    if (_timer.ElapsedMilliseconds >= cutoff)
                     {
                         break;
                     }
@@ -331,7 +325,7 @@ namespace Disruptor
                         throw AlertException.ALERT_EXCEPTION;
                     }
 
-                    if (timeoutMs < (CurrentTimeMillis() - currentTime))
+                    if (_timer.ElapsedMilliseconds >= cutoff)
                     {
                         break;
                     }
@@ -340,13 +334,7 @@ namespace Disruptor
 
             return availableSequence;
         }
-
-        private long CurrentTimeMillis()
-        {
-            return DateTime.Now.Ticks/TimeSpan.TicksPerMillisecond;
-        }
-
-
+        
         public void SignalAll()
         {
         }

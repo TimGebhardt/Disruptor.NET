@@ -2,7 +2,6 @@ namespace Disruptor
 {
     public interface IEntry
     {
-        long GetSequence();
-        void SetSequence(long sequence);
+        long Sequence { get; set; }
     }
 }

@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Threading;
 using NUnit.Framework;
 
@@ -10,12 +10,13 @@ namespace Disruptor.Test
         [Test]
         public void Test1()
         {
-            RingBuffer<TestClass> testBuffer = new RingBuffer<TestClass>(new TestClassFactory(),5000);
-           	IConsumerBarrier<TestClass> consumer = testBuffer.CreateConsumerBarrier();
-            BatchConsumer<TestClass> batch = new BatchConsumer<TestClass>(consumer,new TestBatchHandler<TestClass>());
-            IProducerBarrier<TestClass> producerBarrier = testBuffer.CreateProducerBarrier(batch);
-            
-            Thread thread = new Thread(batch.Run);
+            var testBuffer = new RingBuffer<TestClass>(new TestClassFactory(), 1000, new SingleThreadedStrategy(),
+                                                       new BusySpinStrategy<TestClass>());
+            IConsumerBarrier<TestClass> consumerBarrier = testBuffer.CreateConsumerBarrier();
+            var batchConsumer = new BatchConsumer<TestClass>(consumerBarrier, new TestBatchHandler<TestClass>());
+            IProducerBarrier<TestClass> producerBarrier = testBuffer.CreateProducerBarrier(batchConsumer);
+
+            var thread = new Thread(batchConsumer.Run);
             thread.Start();
 
             for (int i = 0; i < 1000; i++)
@@ -26,11 +27,10 @@ namespace Disruptor.Test
 
                 producerBarrier.Commit(test);
             }
-			
-			Thread.Sleep(100);
-            batch.Halt();
-            thread.Join();
 
+            Thread.Sleep(100);
+            batchConsumer.Halt();
+            thread.Join();
         }
     }
 
@@ -52,7 +52,7 @@ namespace Disruptor.Test
         }
     }
 
-    public class TestClass: AbstractEntry
+    public class TestClass : AbstractEntry
     {
         public double Value;
         public string Stuff;
@@ -63,11 +63,11 @@ namespace Disruptor.Test
         }
     }
 
-    public class TestClassFactory:IEntryFactory<TestClass>
+    internal class TestClassFactory : IEntryFactory<TestClass>
     {
         public TestClass Create()
         {
-            return  new TestClass();
+            return new TestClass();
         }
     }
 }

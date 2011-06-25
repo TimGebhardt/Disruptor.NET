@@ -89,7 +89,7 @@ namespace Disruptor
 
                         if (_noSequenceTracker)
                         {
-                            Sequence = entry.GetSequence();
+                            Sequence = entry.Sequence;
                         }
                     }
 
@@ -104,7 +104,7 @@ namespace Disruptor
                     _exceptionHandler.Handle(ex, entry);
                     if (_noSequenceTracker)
                     {
-                        Sequence = entry.GetSequence();
+                        Sequence = entry.Sequence;
                     }
                 }
             }

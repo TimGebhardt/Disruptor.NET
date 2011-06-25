@@ -36,10 +36,10 @@ namespace Disruptor.Test
 	    [Test]
 	    public void ShouldReturnMinimumSequence()
 	    {
-	        List<IConsumer> consumers = new List<IConsumer>();
-	        consumers.Add(_mocks.StrictMock<IConsumer>());
-	        consumers.Add(_mocks.StrictMock<IConsumer>());
-	        consumers.Add(_mocks.StrictMock<IConsumer>());
+	        IConsumer[] consumers = new IConsumer[3];
+	        consumers[0] = _mocks.StrictMock<IConsumer>();
+	        consumers[1] = _mocks.StrictMock<IConsumer>();
+	        consumers[2] = _mocks.StrictMock<IConsumer>();
 	
 			Expect.Call(consumers[0].Sequence).Return(7L);
 			Expect.Call(consumers[1].Sequence).Return(3L);
