@@ -1,6 +1,6 @@
 namespace Disruptor
 {
-    public interface IConsumer //:Runnable
+    public interface IConsumer
     {
 		/// <summary>
 		/// Get the sequence up to which this IConsumer has consumed {@link IEntry}s
