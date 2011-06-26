@@ -16,15 +16,9 @@ namespace Disruptor
         public long p1, p2, p3, p4, p5, p6, p7; // cache line padding
         private volatile bool _running = true;
         public long p8, p9, p10, p11, p12, p13, p14; // cache line padding
-        private long _sequence = -1L;
+        private /*volatile*/ long _sequence = -1L;
         public long p15, p16, p17, p18, p19, p20, p21;
-		
-		public long Sequence 
-		{
-			get { return Thread.VolatileRead(ref _sequence); }
-			private set { Thread.VolatileWrite(ref _sequence, value); }
-		}
-		
+
         private readonly IConsumerBarrier<T> _consumerBarrier;
         private readonly IBatchHandler<T> _handler;
         private readonly bool _noSequenceTracker;
@@ -63,48 +57,58 @@ namespace Disruptor
             return _consumerBarrier;
         }
 
+
+        public long Sequence
+        {
+            get { return Thread.VolatileRead(ref _sequence); }
+            set { Thread.VolatileWrite(ref _sequence,value); }
+        }
+
+
         public void Halt()
         {
             _running = false;
             _consumerBarrier.Alert();
         }
 
-// It is ok to have another thread rerun this method after a halt().
+        // It is ok to have another thread rerun this method after a halt().
         public void Run()
         {
             _running = true;
             T entry = default(T);
-
-            while (_running)
+            unchecked
             {
-                try
+                while (_running)
                 {
-                    long nextSequence = Sequence + 1;
-                    long availableSeq = _consumerBarrier.WaitFor(nextSequence);
-
-                    for (long i = nextSequence; i <= availableSeq; i++)
+                    try
                     {
-                        entry = _consumerBarrier.GetEntry(i);
-                        _handler.OnAvailable(entry);
+                        long nextSequence = (Sequence + 1);
+                        long availableSeq = _consumerBarrier.WaitFor(nextSequence);
 
+                        for (long i = nextSequence; i <= availableSeq; ++i)
+                        {
+                            entry = _consumerBarrier.GetEntry(i);
+                            _handler.OnAvailable(entry);
+
+                            if (_noSequenceTracker)
+                            {
+                                Sequence = entry.Sequence;
+                            }
+                        }
+
+                        _handler.OnEndOfBatch();
+                    }
+                    catch (AlertException ex)
+                    {
+                        // Wake up from blocking wait and check if we should continue to run
+                    }
+                    catch (Exception ex)
+                    {
+                        _exceptionHandler.Handle(ex, entry);
                         if (_noSequenceTracker)
                         {
                             Sequence = entry.Sequence;
                         }
-                    }
-
-                    _handler.OnEndOfBatch();
-                }
-                catch (AlertException)
-                {
-                    // Wake up from blocking wait and check if we should continue to run
-                }
-                catch (Exception ex)
-                {
-                    _exceptionHandler.Handle(ex, entry);
-                    if (_noSequenceTracker)
-                    {
-                        Sequence = entry.Sequence;
                     }
                 }
             }
@@ -112,7 +116,7 @@ namespace Disruptor
             _handler.OnCompletion();
         }
 
-        public class SequenceTrackerCallback
+        public class SequenceTrackerCallback:ISequenceTrackerCallback
         {
             private readonly BatchConsumer<T> _batchConsumer;
 
@@ -126,5 +130,7 @@ namespace Disruptor
                 _batchConsumer.Sequence = sequence;
             }
         }
+
+       
     }
 }
