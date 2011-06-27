@@ -2,13 +2,13 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using NUnit.Framework;
+using System.Threading.Tasks;
 
 namespace Disruptor.Test
 {
     [TestFixture]
     public class RingBufferTest
     {
-        //private static  ExecutorService EXECUTOR = Executors.newSingleThreadExecutor(new DaemonThreadFactory());
         private RingBuffer<StubEntry> ringBuffer;
         private IConsumerBarrier<StubEntry> consumerBarrier;
         private IProducerBarrier<StubEntry> producerBarrier;
@@ -24,7 +24,7 @@ namespace Disruptor.Test
         }
 
         [Test]
-        public void shouldClaimAndGet() // 
+        public void shouldClaimAndGet()
         {
             Assert.AreEqual(-1L, ringBuffer.Cursor);
 
@@ -71,19 +71,19 @@ namespace Disruptor.Test
             Assert.AreEqual(-1L, sequence);
         }
 
-        //[Test]
-        //public void shouldClaimAndGetInSeparateThread()
-        //{
-        //    getMessages(0, 0);
+		[Test]
+        public void shouldClaimAndGetInSeparateThread()
+        {
+            Task<List<StubEntry>> messages = GetMessages(0, 0);
 
-        //    StubEntry expectedEntry = new StubEntry(2701);
-
-        //    StubEntry oldEntry = producerBarrier.NextEntry();
-        //    oldEntry.copy(expectedEntry);
-        //    producerBarrier.Commit(oldEntry);
-        //    //Assert.IsTrue(messages.WaitUntilCompleted(1000));
-        //    Assert.AreEqual(expectedEntry, _list[0].Value);
-        //}
+	        StubEntry expectedEntry = new StubEntry(2701);
+	
+	        StubEntry oldEntry = producerBarrier.NextEntry();
+	        oldEntry.copy(expectedEntry);
+	        producerBarrier.Commit(oldEntry);
+	
+	        Assert.AreEqual(expectedEntry, messages.Result[0]);
+        }
 
         [Test]
         public void shouldClaimAndGetMultipleMessages()
@@ -148,20 +148,19 @@ namespace Disruptor.Test
             Assert.AreEqual(expectedSequence, ringBuffer.Cursor);
         }
 
-        private void getMessages(long initial, long toWaitFor)
-            //   throws InterruptedException, BrokenBarrierException
-        {
-            //CyclicBarrier cyclicBarrier = new CyclicBarrier(2);
-            IConsumerBarrier<StubEntry> consumerBarrier = ringBuffer.CreateConsumerBarrier();
-
-            //    Future<List<StubEntry>> f = EXECUTOR.submit(new TestWaiter(cyclicBarrier, consumerBarrier, initial, toWaitFor));
-            _list = new List<StubEntry>();
-            var thread = new Thread((new TestWaiter(_list, consumerBarrier, initial, toWaitFor)).Call);
-            thread.Start();
-            Thread.Sleep(1000);
-            thread.Join();
-            //   cyclicBarrier.Await();
-        }
+	    private Task<List<StubEntry>> GetMessages(long initial, long toWaitFor)
+	    {
+	        var barrier = new AutoResetEvent(false);
+	        var consumerBarrier = ringBuffer.CreateConsumerBarrier();
+	
+	        Task<List<StubEntry>> f = new Task<List<StubEntry>>(
+				new TestWaiter(barrier, consumerBarrier, initial, toWaitFor).Call);
+			f.Start();
+	
+	        barrier.WaitOne(TimeSpan.FromSeconds(10));
+	
+	        return f;
+	    }
     }
 
     public class StubEntry : AbstractEntry
@@ -207,39 +206,36 @@ namespace Disruptor.Test
         }
     }
 
-    public class TestWaiter //implements Callable<List<StubEntry>>
+    public class TestWaiter
     {
         private readonly long toWaitForSequence;
-        private readonly List<StubEntry> _entries;
         private readonly long initialSequence;
-        // private  CyclicBarrier cyclicBarrier;
+        private AutoResetEvent barrier;
         private readonly IConsumerBarrier<StubEntry> consumerBarrier;
-        private List<StubEntry> _stubEntries;
 
-        public TestWaiter(List<StubEntry> entries,
+        public TestWaiter(AutoResetEvent barrier,
                           IConsumerBarrier<StubEntry> consumerBarrier,
                           long initialSequence,
                           long toWaitForSequence)
         {
-            // this.cyclicBarrier = cyclicBarrier;
-            _entries = entries;
+            this.barrier = barrier;
             this.initialSequence = initialSequence;
             this.toWaitForSequence = toWaitForSequence;
             this.consumerBarrier = consumerBarrier;
         }
 
 
-        public void Call() // throws Exception
+        public List<StubEntry> Call()
         {
-            //  cyclicBarrier.await();
-            Console.WriteLine("TestWaiter about to wait");
+            barrier.Set();
             consumerBarrier.WaitFor(toWaitForSequence);
-            _entries.Clear();
+			
+			List<StubEntry> retval = new List<StubEntry>();
             for (long l = initialSequence; l <= toWaitForSequence; l++)
             {
-                _stubEntries.Add(consumerBarrier.GetEntry(l));
+                retval.Add(consumerBarrier.GetEntry(l));
             }
-            Console.WriteLine("TestWaiter finished");
+			return retval;
         }
     }
 }

@@ -6,3 +6,6 @@
 /Disruptor/obj
 /Disruptor.Test/test-results
 /Disruptor.Test/bin
+/Disruptor.Test/obj
+/Disruptor.Perf/bin
+/Disruptor.Perf/obj
