@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="3.5" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" DefaultTargets="Build">
   <PropertyGroup>
     <ProjectGuid>{FF186971-3F38-4A5E-883E-D7F1A4D8D87F}</ProjectGuid>
@@ -48,18 +48,37 @@
     <PlatformTarget>x86</PlatformTarget>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="nunit.framework">
+      <HintPath>..\lib\nunit.framework.dll</HintPath>
+    </Reference>
+    <Reference Include="Rhino.Mocks">
+      <HintPath>..\lib\Rhino.Mocks.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core">
       <RequiredTargetFramework>3.5</RequiredTargetFramework>
     </Reference>
+    <Reference Include="System.Threading" />
     <Reference Include="System.Xml" />
     <Reference Include="System.Xml.Linq">
       <RequiredTargetFramework>3.5</RequiredTargetFramework>
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="MyClass.cs" />
+    <Compile Include="BatchConsumerSequenceTrackTest.cs" />
+    <Compile Include="BatchConsumerTests.cs" />
+    <Compile Include="ConsumerBarrierTests.cs" />
+    <Compile Include="DisruptorTests.cs" />
     <Compile Include="AssemblyInfo.cs" />
+    <Compile Include="Pipeline3Step.cs" />
+    <Compile Include="RingBufferTests.cs" />
+    <Compile Include="UtilTest.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Disruptor\Disruptor_3.5.csproj">
+      <Project>{FAEB6D38-1235-4DCA-9646-8170188006CA}</Project>
+      <Name>Disruptor_3.5</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.Targets" />
 </Project>
