@@ -5,135 +5,130 @@ using Rhino.Mocks;
 
 namespace Disruptor.Test
 {
-    [TestFixture]
-    public class ConsumerBarrierTest
-    {
-    	private MockRepository _mocks;
-        private RingBuffer<StubEntry> ringBuffer;
-        private IConsumer consumer1;
-        private IConsumer consumer2;
-        private IConsumer consumer3;
-        private IConsumerBarrier<StubEntry> consumerBarrier;
-        private IProducerBarrier<StubEntry> producerBarrier;
+	[TestFixture]
+	public class ConsumerBarrierTest
+	{
+		private MockRepository _mocks;
+		private RingBuffer<StubEntry> ringBuffer;
+		private IConsumer consumer1;
+		private IConsumer consumer2;
+		private IConsumer consumer3;
+		private IConsumerBarrier<StubEntry> consumerBarrier;
+		private IProducerBarrier<StubEntry> producerBarrier;
 
-        [SetUp]
-        public void setUp()
-        {
-        	_mocks = new MockRepository();
+		[SetUp]
+		public void setUp()
+		{
+			_mocks = new MockRepository();
 
-            ringBuffer = new RingBuffer<StubEntry>(new StubFactory(), 64);
+			ringBuffer = new RingBuffer<StubEntry>(new StubFactory(), 64);
 
-            consumer1 = _mocks.DynamicMock<IConsumer>();
-            consumer2 = _mocks.DynamicMock<IConsumer>();
-            consumer3 = _mocks.DynamicMock<IConsumer>();
+			consumer1 = _mocks.DynamicMock<IConsumer>();
+			consumer2 = _mocks.DynamicMock<IConsumer>();
+			consumer3 = _mocks.DynamicMock<IConsumer>();
 
-            consumerBarrier = ringBuffer.CreateConsumerBarrier(consumer1, consumer2, consumer3);
-            producerBarrier = ringBuffer.CreateProducerBarrier(new NoOpConsumer(ringBuffer));
-        }
+			consumerBarrier = ringBuffer.CreateConsumerBarrier(consumer1, consumer2, consumer3);
+			producerBarrier = ringBuffer.CreateProducerBarrier(new NoOpConsumer(ringBuffer));
+		}
 
 		[Test]
 		public void shouldWaitForWorkCompleteWhereCompleteWorkThresholdIsAhead()
 		{
-		    long expectedNumberMessages = 10;
-		    long expectedWorkSequence = 9;
-		    fillRingBuffer(expectedNumberMessages);
-		    
-		    Expect.Call(consumer1.Sequence).Return(expectedNumberMessages);
-		    Expect.Call(consumer2.Sequence).Return(expectedWorkSequence);
-		    Expect.Call(consumer3.Sequence).Return(expectedWorkSequence);
-		    
-		    _mocks.ReplayAll();
-		    
+			long expectedNumberMessages = 10;
+			long expectedWorkSequence = 9;
+			fillRingBuffer(expectedNumberMessages);
+			
+			Expect.Call(consumer1.Sequence).Return(expectedNumberMessages);
+			Expect.Call(consumer2.Sequence).Return(expectedWorkSequence);
+			Expect.Call(consumer3.Sequence).Return(expectedWorkSequence);
+			
+			_mocks.ReplayAll();
+			
 			long completedWorkSequence = consumerBarrier.WaitFor(expectedWorkSequence);
 			Assert.IsTrue(completedWorkSequence >= expectedWorkSequence);
 			
 			_mocks.VerifyAll();
 		}
 
-        [Test]
-        public void shouldWaitForWorkCompleteWhereAllWorkersAreBlockedOnRingBuffer()
-        {
-            long expectedNumberMessages = 10;
-            fillRingBuffer(expectedNumberMessages);
+		[Test]
+		public void shouldWaitForWorkCompleteWhereAllWorkersAreBlockedOnRingBuffer()
+		{
+			long expectedNumberMessages = 10;
+			fillRingBuffer(expectedNumberMessages);
 
-            var workers = new StubConsumer[3];
-            for (int i = 0, size = workers.Length; i < size; i++)
-            {
-                workers[i] = new StubConsumer(0);
-                workers[i].Sequence = (expectedNumberMessages - 1);
-            }
+			var workers = new StubConsumer[3];
+			for (int i = 0, size = workers.Length; i < size; i++)
+			{
+				workers[i] = new StubConsumer(0);
+				workers[i].Sequence = (expectedNumberMessages - 1);
+			}
 
-            IConsumerBarrier consumerBarrier = ringBuffer.CreateConsumerBarrier(workers);
-            ThreadStart runnable = () =>
-                                       {
-                                           StubEntry entry = producerBarrier.NextEntry();
-                                           entry.Value = ((int) entry.Sequence);
-                                           producerBarrier.Commit(entry);
+			IConsumerBarrier consumerBarrier = ringBuffer.CreateConsumerBarrier(workers);
+			ThreadStart runnable = () =>
+			{
+				StubEntry entry = producerBarrier.NextEntry();
+				entry.Value = ((int) entry.Sequence);
+				producerBarrier.Commit(entry);
 
-                                           foreach (StubConsumer stubWorker in workers)
-                                           {
-                                               stubWorker.Sequence = (entry.Sequence);
-                                           }
-                                       };
+				foreach (StubConsumer stubWorker in workers)
+				{
+					stubWorker.Sequence = (entry.Sequence);
+				}
+			};
 
 
-            new Thread(runnable).Start();
+			new Thread(runnable).Start();
 
-            long expectedWorkSequence = expectedNumberMessages;
-            long completedWorkSequence = consumerBarrier.WaitFor(expectedNumberMessages);
-            Assert.IsTrue(completedWorkSequence >= expectedWorkSequence);
-        }
-/*
-        [Test]
-        public void shouldInterruptDuringBusySpin() //throws Exception
-        {
-            long expectedNumberMessages = 10;
-            fillRingBuffer(expectedNumberMessages);
-            //     CountDownLatch latch = new CountDownLatch(9);
+			long expectedWorkSequence = expectedNumberMessages;
+			long completedWorkSequence = consumerBarrier.WaitFor(expectedNumberMessages);
+			Assert.IsTrue(completedWorkSequence >= expectedWorkSequence);
+		}
 
-            //context.checking(new Expectations()
-            //{
-            //    {
-            //        allowing(consumer1).getSequence();
-            //        will(new DoAllAction(countDown(latch), returnValue(Long.valueOf(8L))));
+		[Test]
+		public void shouldInterruptDuringBusySpin()
+		{
+			long expectedNumberMessages = 10;
+			fillRingBuffer(expectedNumberMessages);
+			CountdownEvent latch = new CountdownEvent(9);
 
-            //        allowing(consumer2).getSequence();
-            //        will(new DoAllAction(countDown(latch), returnValue(Long.valueOf(8L))));
+			Action consumerWhenCalled = () => { if(latch.CurrentCount > 0) latch.Signal(); };
+			
+			Expect.Call(consumer1.Sequence).WhenCalled(m => consumerWhenCalled()).Return(8L);
+			Expect.Call(consumer2.Sequence).WhenCalled(m => consumerWhenCalled()).Return(8L);
+			Expect.Call(consumer3.Sequence).WhenCalled(m => consumerWhenCalled()).Return(8L);
 
-            //        allowing(consumer3).getSequence();
-            //        will(new DoAllAction(countDown(latch), returnValue(Long.valueOf(8L))));
-            //    }
-            //});
+			_mocks.ReplayAll();
+			
+			AutoResetEvent alerted = new AutoResetEvent(false);
+			ThreadStart runnable = () =>
+			{
+				try
+				{
+					consumerBarrier.WaitFor(expectedNumberMessages - 1);
+				}
+				catch (AlertException)
+				{
+					alerted.Set();
+				}
+				catch (Exception)
+				{
+					// don't care
+				}
+			};
 
-            bool[] Alerted = {false};
-            ThreadStart runnable = () =>
-                                       {
-                                           try
-                                           {
-                                               consumerBarrier.WaitFor(expectedNumberMessages - 1);
-                                           }
-                                           catch (AlertException)
-                                           {
-                                               Alerted[0] = true;
-                                           }
-                                           catch (Exception)
-                                           {
-                                               // don't care
-                                           }
-                                       };
+			var t = new Thread(runnable);
 
-            var t = new Thread(runnable);
+			t.Start();
+			Assert.IsTrue(latch.Wait(TimeSpan.FromSeconds(1)), "latch is {0}", latch.CurrentCount);
+			consumerBarrier.Alert();
+			t.Join();
 
-            t.Start();
-            //  Assert.IsTrue(latch.Await(1, TimeUnit.SECONDS));
-            Thread.Sleep(1000);
-            consumerBarrier.Alert();
-            t.Join();
-
-            Assert.IsTrue(Alerted[0]);
-        }
-*/
-/*
+			Assert.IsTrue(alerted.WaitOne(TimeSpan.FromSeconds(1)), "Thread was not interrupted");
+			
+			_mocks.VerifyAll();
+		}
+		
+		/*
         [Test]
         public void shouldWaitForWorkCompleteWhereCompleteWorkThresholdIsBehind() //throws Exception
         {
@@ -164,8 +159,8 @@ namespace Disruptor.Test
             long completedWorkSequence = consumerBarrier.WaitFor(expectedWorkSequence);
             Assert.IsTrue(completedWorkSequence >= expectedWorkSequence);
         }
-*/
-/*
+		 */
+		/*
         [Test]
         public void shouldSetAndClearAlertStatus()
         {
@@ -177,36 +172,36 @@ namespace Disruptor.Test
             consumerBarrier.ClearAlert();
             Assert.IsFalse(consumerBarrier.IsAlerted());
         }
-*/
+		 */
 
-        private void fillRingBuffer(long expectedNumberMessages) // throws InterruptedException
-        {
-            for (long i = 0; i < expectedNumberMessages; i++)
-            {
-                StubEntry entry = producerBarrier.NextEntry();
-                entry.Value = (int) i;
-                producerBarrier.Commit(entry);
-            }
-        }
+		private void fillRingBuffer(long expectedNumberMessages) // throws InterruptedException
+		{
+			for (long i = 0; i < expectedNumberMessages; i++)
+			{
+				StubEntry entry = producerBarrier.NextEntry();
+				entry.Value = (int) i;
+				producerBarrier.Commit(entry);
+			}
+		}
 
-        internal class StubConsumer : IConsumer
-        {
-        	private long _sequence;
-        	
-            public StubConsumer(long sequence)
-            {
-                Sequence = sequence;
-            }
+		internal class StubConsumer : IConsumer
+		{
+			private long _sequence;
+			
+			public StubConsumer(long sequence)
+			{
+				Sequence = sequence;
+			}
 
-            public long Sequence 
-            {
-            	get { return Thread.VolatileRead(ref _sequence); }
-            	set { Thread.VolatileWrite(ref _sequence, value); }
-            }
-            
-            public void Halt()
-            {
-            }
-        }
-    }
+			public long Sequence
+			{
+				get { return Thread.VolatileRead(ref _sequence); }
+				set { Thread.VolatileWrite(ref _sequence, value); }
+			}
+			
+			public void Halt()
+			{
+			}
+		}
+	}
 }
