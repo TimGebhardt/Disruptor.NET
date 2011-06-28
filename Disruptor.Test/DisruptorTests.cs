@@ -38,17 +38,14 @@ namespace Disruptor.Test
     {
         public void OnAvailable(TestClass entry)
         {
-            Console.WriteLine("Available " + entry);
         }
 
         public void OnEndOfBatch()
         {
-            Console.WriteLine("EndofBatch ");
         }
 
         public void OnCompletion()
         {
-            Console.WriteLine("OnCompletion ");
         }
     }
 

@@ -319,9 +319,8 @@ namespace Disruptor.Test
         }
 
 
-        public void OnAvailable(ValueEntry entry) // throws Exception
+        public void OnAvailable(ValueEntry entry)
         {
-            Console.WriteLine(string.Format("{0}:{1}", functionStep, entry.Sequence));
             Thread.Sleep(1);
             switch (functionStep)
             {
@@ -337,12 +336,10 @@ namespace Disruptor.Test
 
         public void OnEndOfBatch()
         {
-            Console.WriteLine(string.Format("{0}:EOB", functionStep));
         }
 
         public void OnCompletion()
         {
-            Console.WriteLine(string.Format("{0}:OnCompletion", functionStep));
         }
     }
 
@@ -383,13 +380,12 @@ namespace Disruptor.Test
                     if ((entry.getStepTwoResult() & 4L) == 4L)
                     {
                         stepThreeCounter++;
-                        Console.WriteLine(stepThreeCounter);
                     }
                     break;
             }
         }
 
-        public void OnEndOfBatch() // throws Exception
+        public void OnEndOfBatch()
         {
         }
 
