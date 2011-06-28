@@ -164,7 +164,8 @@ namespace Disruptor
     }
 
     /**
-     * Yielding strategy that uses a Thread.yield() for {@link IConsumer}s waiting on a barrier.
+     * 
+* ing strategy that uses a Thread.yield() for {@link IConsumer}s waiting on a barrier.
      *
      * This strategy is a good compromise between performance and CPU resource.
      */
@@ -185,8 +186,7 @@ namespace Disruptor
                     {
                         throw AlertException.ALERT_EXCEPTION;
                     }
-
-                    Thread.Yield();
+                    ThreadYield();
                 }
             }
             else
@@ -198,7 +198,7 @@ namespace Disruptor
                         throw AlertException.ALERT_EXCEPTION;
                     }
 
-                    Thread.Yield();
+                    ThreadYield();
                 }
             }
 
@@ -222,7 +222,7 @@ namespace Disruptor
                         throw AlertException.ALERT_EXCEPTION;
                     }
 
-                    Thread.Yield();
+                    ThreadYield();
                     if (_timer.ElapsedMilliseconds > cutoff)
                     {
                         break;
@@ -238,7 +238,7 @@ namespace Disruptor
                         throw AlertException.ALERT_EXCEPTION;
                     }
 
-                    Thread.Yield();
+                    ThreadYield();
                     if (_timer.ElapsedMilliseconds>cutoff)
                     {
                         break;
@@ -252,6 +252,15 @@ namespace Disruptor
        
         public void SignalAll()
         {
+        }
+        
+        private void ThreadYield()
+        {
+#if CSHARP30
+					Thread.Sleep(0);
+#else
+                    Thread.Yield();
+#endif
         }
     }
 

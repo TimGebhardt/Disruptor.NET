@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="3.5" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" DefaultTargets="Build">
   <PropertyGroup>
     <ProjectGuid>{FAEB6D38-1235-4DCA-9646-8170188006CA}</ProjectGuid>
@@ -25,7 +25,7 @@
     <DebugType>Full</DebugType>
     <Optimize>False</Optimize>
     <CheckForOverflowUnderflow>True</CheckForOverflowUnderflow>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <DefineConstants>DEBUG;TRACE;CSHARP30</DefineConstants>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
     <OutputPath>bin\Release\</OutputPath>
@@ -46,6 +46,9 @@
     <PlatformTarget>x86</PlatformTarget>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="log4net">
+      <HintPath>..\lib\log4net.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core">
       <RequiredTargetFramework>3.5</RequiredTargetFramework>
@@ -56,7 +59,32 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AbstractEntry.cs" />
+    <Compile Include="AlertException.cs" />
     <Compile Include="AssemblyInfo.cs" />
+    <Compile Include="BatchConsumer.cs" />
+    <Compile Include="Collections\Histogram.cs" />
+    <Compile Include="FatalExceptionHandler.cs" />
+    <Compile Include="IBatchHandler.cs" />
+    <Compile Include="IClaimStrategy.cs" />
+    <Compile Include="IConsumer.cs" />
+    <Compile Include="IConsumerBarrier.cs" />
+    <Compile Include="IEntry.cs" />
+    <Compile Include="IEntryFactory.cs" />
+    <Compile Include="IEntryTranslator.cs" />
+    <Compile Include="IExceptionHandler.cs" />
+    <Compile Include="IForceFillProducerBarrier.cs" />
+    <Compile Include="IgnoreExceptionHandler.cs" />
+    <Compile Include="IProducerBarrier.cs" />
+    <Compile Include="IRingBuffer.cs" />
+    <Compile Include="ISequenceTrackingHandler.cs" />
+    <Compile Include="IWaitStrategy.cs" />
+    <Compile Include="NoOpConsumer.cs" />
+    <Compile Include="RingBuffer.cs" />
+    <Compile Include="Util.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Collections" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.Targets" />
 </Project>

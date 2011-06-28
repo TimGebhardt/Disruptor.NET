@@ -9,20 +9,6 @@ using System.Threading;
 
 namespace Disruptor
 {
-    public interface IRingBuffer
-    {
-        int Capacity { get; }
-        long Cursor { get; }
-    }
-
-    public interface IRingBuffer<T> : IRingBuffer where T : IEntry
-    {
-        IConsumerBarrier<T> CreateConsumerBarrier(params IConsumer[] consumersToTrack);
-        IProducerBarrier<T> CreateProducerBarrier(params IConsumer[] consumersToTrack);
-        IForceFillProducerBarrier<T> CreateForceFillProducerBarrier(params IConsumer[] consumersToTrack);
-        T GetEntry(long sequence);
-    }
-
     public class RingBuffer<T> : IRingBuffer<T> where T : IEntry
     {
         public const long InitialCursorValue = -1L;
@@ -211,7 +197,11 @@ namespace Disruptor
             {
                 while ((sequence - Util.GetMinimumSequence(_consumers)) >= _ringBuffer._entries.Length)
                 {
+#if CSHARP30
+					Thread.Sleep(0);
+#else
                     Thread.Yield();
+#endif
                 }
             }
         }
@@ -267,7 +257,11 @@ namespace Disruptor
             {
                 while ((sequence - Util.GetMinimumSequence(_consumers)) >= _ringBuffer._entries.Length)
                 {
+#if CSHARP30
+					Thread.Sleep(0);
+#else
                     Thread.Yield();
+#endif
                 }
             }
         }
