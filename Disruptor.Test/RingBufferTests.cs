@@ -12,7 +12,6 @@ namespace Disruptor.Test
         private RingBuffer<StubEntry> ringBuffer;
         private IConsumerBarrier<StubEntry> consumerBarrier;
         private IProducerBarrier<StubEntry> producerBarrier;
-        private List<StubEntry> _list;
 
         [SetUp]
         public void setUp()

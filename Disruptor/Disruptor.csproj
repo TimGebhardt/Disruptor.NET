@@ -68,7 +68,7 @@
     <Compile Include="IgnoreExceptionHandler.cs" />
     <Compile Include="NoOpConsumer.cs" />
     <Compile Include="IProducerBarrier.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="AssemblyInfo.cs" />
     <Compile Include="RingBuffer.cs" />
     <Compile Include="ISequenceTrackingHandler.cs" />
     <Compile Include="Util.cs" />
