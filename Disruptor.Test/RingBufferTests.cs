@@ -87,11 +87,16 @@ namespace Disruptor.Test
         [Test]
         public void shouldClaimAndGetMultipleMessages()
         {
-            int numMessages = ringBuffer.Capacity;
+        	//We need this so that the sequence and values for the entries
+        	//aren't the same.  This prevents simple errors mixing up 
+        	//.Value and .Sequence
+        	int entryValueOffset = 3;
+            
+        	int numMessages = ringBuffer.Capacity;
             for (int i = 0; i < numMessages; i++)
             {
                 StubEntry entry = producerBarrier.NextEntry();
-                entry.Value = i;
+                entry.Value = i + entryValueOffset;
                 producerBarrier.Commit(entry);
             }
 
@@ -101,19 +106,24 @@ namespace Disruptor.Test
 
             for (int i = 0; i < numMessages; i++)
             {
-                Assert.AreEqual(i, ringBuffer.GetEntry(i).Value);
+                Assert.AreEqual(i + entryValueOffset, ringBuffer.GetEntry(i).Value);
             }
         }
 
         [Test]
         public void shouldWrap()
         {
-            int numMessages = ringBuffer.Capacity;
+        	//We need this so that the sequence and values for the entries
+        	//aren't the same.  This prevents simple errors mixing up 
+        	//.Value and .Sequence
+        	int entryValueOffset = 3;
+            
+        	int numMessages = ringBuffer.Capacity;
             int offset = 1000;
             for (int i = 0; i < numMessages + offset; i++)
             {
                 StubEntry entry = producerBarrier.NextEntry();
-                entry.Value = i;
+                entry.Value = i + entryValueOffset;
                 producerBarrier.Commit(entry);
             }
 
@@ -123,7 +133,7 @@ namespace Disruptor.Test
 
             for (int i = offset; i < numMessages + offset; i++)
             {
-                Assert.AreEqual(i, ringBuffer.GetEntry(i).Value);
+                Assert.AreEqual(i + entryValueOffset, ringBuffer.GetEntry(i).Value);
             }
         }
 
