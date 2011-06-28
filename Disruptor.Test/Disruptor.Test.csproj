@@ -67,7 +67,6 @@
     <Compile Include="BatchConsumerSequenceTrackTest.cs" />
     <Compile Include="BatchConsumerTests.cs" />
     <Compile Include="ConsumerBarrierTests.cs" />
-    <Compile Include="Pipeline3Step.cs" />
     <Compile Include="RingBufferTests.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />

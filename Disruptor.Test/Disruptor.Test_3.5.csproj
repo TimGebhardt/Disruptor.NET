@@ -70,7 +70,6 @@
     <Compile Include="ConsumerBarrierTests.cs" />
     <Compile Include="DisruptorTests.cs" />
     <Compile Include="AssemblyInfo.cs" />
-    <Compile Include="Pipeline3Step.cs" />
     <Compile Include="RingBufferTests.cs" />
     <Compile Include="UtilTest.cs" />
   </ItemGroup>
