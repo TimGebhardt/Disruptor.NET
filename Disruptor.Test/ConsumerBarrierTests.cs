@@ -50,8 +50,8 @@ namespace Disruptor.Test
 			_mocks.VerifyAll();
 		}
 
-/*        [Test]
-        public void shouldWaitForWorkCompleteWhereAllWorkersAreBlockedOnRingBuffer() // throws Exception
+        [Test]
+        public void shouldWaitForWorkCompleteWhereAllWorkersAreBlockedOnRingBuffer()
         {
             long expectedNumberMessages = 10;
             fillRingBuffer(expectedNumberMessages);
@@ -83,7 +83,6 @@ namespace Disruptor.Test
             long completedWorkSequence = consumerBarrier.WaitFor(expectedNumberMessages);
             Assert.IsTrue(completedWorkSequence >= expectedWorkSequence);
         }
-*/
 /*
         [Test]
         public void shouldInterruptDuringBusySpin() //throws Exception
