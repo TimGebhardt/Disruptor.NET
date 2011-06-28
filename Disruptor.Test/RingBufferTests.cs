@@ -101,7 +101,7 @@ namespace Disruptor.Test
 
             for (int i = 0; i < numMessages; i++)
             {
-                Assert.AreEqual(i, ringBuffer.GetEntry(i).Sequence);
+                Assert.AreEqual(i, ringBuffer.GetEntry(i).Value);
             }
         }
 
@@ -123,7 +123,7 @@ namespace Disruptor.Test
 
             for (int i = offset; i < numMessages + offset; i++)
             {
-                Assert.AreEqual(i, ringBuffer.GetEntry(i).Sequence);
+                Assert.AreEqual(i, ringBuffer.GetEntry(i).Value);
             }
         }
 
@@ -191,6 +191,7 @@ namespace Disruptor.Test
         {
             if (this == obj) return true;
             if (obj == null) return false;
+            if(GetType() != obj.GetType()) return false;
             var other = (StubEntry) obj;
 
             return Value == other.Value;
