@@ -32,7 +32,7 @@ namespace Disruptor.Test
 		}
 
 		[Test]
-		public void shouldWaitForWorkCompleteWhereCompleteWorkThresholdIsAhead()
+		public void ShouldWaitForWorkCompleteWhereCompleteWorkThresholdIsAhead()
 		{
 			long expectedNumberMessages = 10;
 			long expectedWorkSequence = 9;
@@ -51,7 +51,7 @@ namespace Disruptor.Test
 		}
 
 		[Test]
-		public void shouldWaitForWorkCompleteWhereAllWorkersAreBlockedOnRingBuffer()
+		public void ShouldWaitForWorkCompleteWhereAllWorkersAreBlockedOnRingBuffer()
 		{
 			long expectedNumberMessages = 10;
 			fillRingBuffer(expectedNumberMessages);
@@ -85,7 +85,7 @@ namespace Disruptor.Test
 		}
 
 		[Test]
-		public void shouldInterruptDuringBusySpin()
+		public void ShouldInterruptDuringBusySpin()
 		{
 			long expectedNumberMessages = 10;
 			fillRingBuffer(expectedNumberMessages);
@@ -130,7 +130,7 @@ namespace Disruptor.Test
 		
 		
         [Test]
-        public void shouldWaitForWorkCompleteWhereCompleteWorkThresholdIsBehind()
+        public void ShouldWaitForWorkCompleteWhereCompleteWorkThresholdIsBehind()
         {
             long expectedNumberMessages = 10;
             fillRingBuffer(expectedNumberMessages);
@@ -160,9 +160,8 @@ namespace Disruptor.Test
             Assert.IsTrue(completedWorkSequence >= expectedWorkSequence);
         }
 		 
-		/*
         [Test]
-        public void shouldSetAndClearAlertStatus()
+        public void ShouldSetAndClearAlertStatus()
         {
             Assert.IsFalse(consumerBarrier.IsAlerted());
 
@@ -172,7 +171,6 @@ namespace Disruptor.Test
             consumerBarrier.ClearAlert();
             Assert.IsFalse(consumerBarrier.IsAlerted());
         }
-		 */
 
 		private void fillRingBuffer(long expectedNumberMessages) // throws InterruptedException
 		{

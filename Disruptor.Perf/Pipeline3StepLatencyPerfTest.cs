@@ -169,7 +169,7 @@ namespace Disruptor.Perf
         ///////////////////////////////////////////////////////////////////////////////////////////////
 
         [Test]
-        public void shouldCompareDisruptorVsQueues()
+        public void ShouldCompareDisruptorVsQueues()
 
         {
             int RUNS = 1; // 3;

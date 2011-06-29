@@ -23,7 +23,7 @@ namespace Disruptor.Test
         }
 
         [Test]
-        public void shouldClaimAndGet()
+        public void ShouldClaimAndGet()
         {
             Assert.AreEqual(-1L, ringBuffer.Cursor);
 
@@ -43,7 +43,7 @@ namespace Disruptor.Test
         }
 
         [Test]
-        public void shouldClaimAndGetWithTimeout() // 
+        public void ShouldClaimAndGetWithTimeout() // 
         {
             Assert.AreEqual(-1L, ringBuffer.Cursor);
 
@@ -64,14 +64,14 @@ namespace Disruptor.Test
 
 
         [Test]
-        public void shouldGetWithTimeout()
+        public void ShouldGetWithTimeout()
         {
             long sequence = consumerBarrier.WaitFor(0, 5);
             Assert.AreEqual(-1L, sequence);
         }
 
 		[Test]
-        public void shouldClaimAndGetInSeparateThread()
+        public void ShouldClaimAndGetInSeparateThread()
         {
             Task<List<StubEntry>> messages = GetMessages(0, 0);
 
@@ -85,7 +85,7 @@ namespace Disruptor.Test
         }
 
         [Test]
-        public void shouldClaimAndGetMultipleMessages()
+        public void ShouldClaimAndGetMultipleMessages()
         {
         	//We need this so that the sequence and values for the entries
         	//aren't the same.  This prevents simple errors mixing up 
@@ -111,7 +111,7 @@ namespace Disruptor.Test
         }
 
         [Test]
-        public void shouldWrap()
+        public void ShouldWrap()
         {
         	//We need this so that the sequence and values for the entries
         	//aren't the same.  This prevents simple errors mixing up 
@@ -138,7 +138,7 @@ namespace Disruptor.Test
         }
 
         [Test]
-        public void shouldSetAtSpecificSequence()
+        public void ShouldSetAtSpecificSequence()
         {
             long expectedSequence = 5;
             IForceFillProducerBarrier<StubEntry> forceFillProducerBarrier =

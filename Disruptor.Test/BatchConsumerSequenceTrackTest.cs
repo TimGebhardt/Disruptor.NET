@@ -10,8 +10,7 @@ namespace Disruptor.Test
         private static readonly AutoResetEvent readyToCallbackLatch = new AutoResetEvent(false);
 
         [Test]
-        public void shouldReportProgressByUpdatingSequenceViaCallback()
-            // throws Exception
+        public void ShouldReportProgressByUpdatingSequenceViaCallback()
         {
             IRingBuffer<StubEntry> ringBuffer = new RingBuffer<StubEntry>(new StubFactory(), 16);
             IConsumerBarrier<StubEntry> consumerBarrier = ringBuffer.CreateConsumerBarrier();
