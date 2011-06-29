@@ -128,9 +128,9 @@ namespace Disruptor.Test
 			_mocks.VerifyAll();
 		}
 		
-		/*
+		
         [Test]
-        public void shouldWaitForWorkCompleteWhereCompleteWorkThresholdIsBehind() //throws Exception
+        public void shouldWaitForWorkCompleteWhereCompleteWorkThresholdIsBehind()
         {
             long expectedNumberMessages = 10;
             fillRingBuffer(expectedNumberMessages);
@@ -138,7 +138,7 @@ namespace Disruptor.Test
             var entryConsumers = new StubConsumer[3];
             for (int i = 0, size = entryConsumers.Length; i < size; i++)
             {
-                entryConsumers[i] = new StubConsumer(1);
+                entryConsumers[i] = new StubConsumer(0);
                 entryConsumers[i].Sequence = (expectedNumberMessages - 2);
             }
 
@@ -159,7 +159,7 @@ namespace Disruptor.Test
             long completedWorkSequence = consumerBarrier.WaitFor(expectedWorkSequence);
             Assert.IsTrue(completedWorkSequence >= expectedWorkSequence);
         }
-		 */
+		 
 		/*
         [Test]
         public void shouldSetAndClearAlertStatus()
