@@ -1,70 +1,71 @@
-//using System;
-//using System.Threading;
-//using NUnit.Framework;
+using System;
+using System.Threading;
+using NUnit.Framework;
+using Rhino.Mocks;
 
-//namespace Disruptor.Test
-//{
-//    [TestFixture]
-//public  class BatchConsumerTest
-//{
-//   // private  Mockery context = new Mockery();
-//  //  private  Sequence lifecycleSequence = context.sequence("lifecycleSequence");
-////    private  CountDownLatch latch = new CountDownLatch(1);
+namespace Disruptor.Test
+{
+	[TestFixture]
+	public class BatchConsumerTest
+	{
+		private MockRepository _mocks;
+		private AutoResetEvent _latch;
 
-//    private  RingBuffer<StubEntry> ringBuffer = new RingBuffer<StubEntry>(new StubFactory(), 16);
-//    private  IConsumerBarrier<StubEntry> consumerBarrier;
-//     private  IBatchHandler<StubEntry> batchHandler = new BatchHandler
-//    private  BatchConsumer<StubEntry> batchConsumer = new BatchConsumer<StubEntry>(consumerBarrier, batchHandler);
-//    private  IProducerBarrier<StubEntry> producerBarrier = ringBuffer.CreateProducerBarrier(batchConsumer);
+	    private RingBuffer<StubEntry> ringBuffer;
+	    private IConsumerBarrier<StubEntry> consumerBarrier;
+	    private IBatchHandler<StubEntry> batchHandler;
+	    private BatchConsumer<StubEntry> batchConsumer;
+	    private IProducerBarrier<StubEntry> producerBarrier;
+        
+        [SetUp]
+        public void SetUp()
+        {
+        	_mocks = new MockRepository();
+        	_latch = new AutoResetEvent(false);
+        	
+        	ringBuffer = new RingBuffer<StubEntry>(new StubFactory(), 16);
+            consumerBarrier = ringBuffer.CreateConsumerBarrier();
+	    	batchHandler = _mocks.DynamicMock<IBatchHandler<StubEntry>>();
+	    	batchConsumer = new BatchConsumer<StubEntry>(consumerBarrier, batchHandler);
+	    	producerBarrier = ringBuffer.CreateProducerBarrier(batchConsumer);        	
+        }
 
-//        public BatchConsumerTest()
-//        {
-//            consumerBarrier = ringBuffer.CreateConsumerBarrier();
-//        }
+        [Test][ExpectedException(typeof(NullReferenceException))]
+	    public void ShouldThrowExceptionOnSettingNullExceptionHandler()
+	    {
+	        batchConsumer.SetExceptionHandler(null);
+	    }
 
-//        [Test][ExpectedException("NullReferenceException")]
-//    public void shouldThrowExceptionOnSettingNullExceptionHandler()
-//    {
-//        batchConsumer.SetExceptionHandler(null);
-//    }
+	    [Test]
+	    public void ShouldReturnUnderlyingBarrier()
+	    {
+	        Assert.AreEqual(consumerBarrier, batchConsumer.GetConsumerBarrier());
+	    }
 
-//    [Test]
-//    public void shouldReturnUnderlyingBarrier()
-//    {
-//        Assert.AreEqual(consumerBarrier, batchConsumer.GetConsumerBarrier());
-//    }
+	    [Test]
+	    public void ShouldCallMethodsInLifecycleOrder()
+		{
+	    	using(_mocks.Ordered())
+	    	{
+	    		Expect.Call(() => batchHandler.OnAvailable(ringBuffer.GetEntry(0)));
+	    		Expect.Call(() => batchHandler.OnEndOfBatch()).WhenCalled(m => _latch.Set());
+	    		Expect.Call(() => batchHandler.OnCompletion());
+	    	}
 
-//    [Test]
-//    public void shouldCallMethodsInLifecycleOrder()
-//        //throws Exception
-//    {
-//        context.checking(new Expectations()
-//        {
-//            {
-//                oneOf(batchHandler).OnAvailable(ringBuffer.GetEntry(0));
-//                inSequence(lifecycleSequence);
+	    	_mocks.ReplayAll();
+	    	
+	        Thread thread = new Thread(batchConsumer.Run);
+	        thread.Start();
 
-//                oneOf(batchHandler).OnEndOfBatch();
-//                inSequence(lifecycleSequence);
-//                will(countDown(latch));
+	        Assert.AreEqual(-1L, batchConsumer.Sequence);
+	        producerBarrier.Commit(producerBarrier.NextEntry());
+	        Assert.IsTrue(_latch.WaitOne(TimeSpan.FromSeconds(1)));
 
-//                oneOf(batchHandler).OnCompletion();
-//                inSequence(lifecycleSequence);
-//            }
-//        });
-
-//        Thread thread = new Thread(batchConsumer.Run);
-//        thread.Start();
-
-//        Assert.AreEqual(-1L, batchConsumer.Sequence);
-
-//        producerBarrier.Commit(producerBarrier.NextEntry());
-
-//        latch.await();
-
-//        batchConsumer.Halt();
-//        thread.Join();
-//    }
+	        batchConsumer.Halt();
+	        thread.Join();
+	        
+	        _mocks.VerifyAll();
+	    }
 
 //    [Test]
 //    public void shouldCallMethodsInLifecycleOrderForBatch()
@@ -149,6 +150,6 @@
 //        batchConsumer.Halt();
 //        thread.Join();
 //    }
-//}
-//}
+	}
+}
 
