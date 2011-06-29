@@ -69,94 +69,76 @@ namespace Disruptor.Test
 	        _mocks.VerifyAll();
 	    }
 
-    [Test]
-    public void ShouldCallMethodsInLifecycleOrderForBatch()
-    {
-    	//You'll notice in these tests we need to actually provide values for the entries
-    	//This is because RhinoMocks is trying to determine what function to call
-    	//based on what arguments are called in.  If the entries producing are all
-    	//equivalent, it'll just call of the expected calls (the one where the argument
-    	//matches the expectation), and the batch will never "catch up" to the ringBuffer.
-    	using(_mocks.Ordered())
-    	{
-    		Expect.Call(() => batchHandler.OnAvailable(ringBuffer.GetEntry(0)));
-    		Expect.Call(() => batchHandler.OnAvailable(ringBuffer.GetEntry(1)));
-    		Expect.Call(() => batchHandler.OnAvailable(ringBuffer.GetEntry(2)));
-    		
-    		Expect.Call(() => batchHandler.OnEndOfBatch()).WhenCalled(m => _latch.Set());
-    		Expect.Call(() => batchHandler.OnCompletion());
-    	}
-    	
-    	_mocks.ReplayAll();
-    	
-    	var entry1 = producerBarrier.NextEntry();
-    	entry1.Value = 100;
-        producerBarrier.Commit(entry1);
-        var entry2 = producerBarrier.NextEntry();
-        entry2.Value = 101;
-        producerBarrier.Commit(entry2);
-        var entry3 = producerBarrier.NextEntry();
-        entry3.Value = 102;
-        producerBarrier.Commit(entry3);
-
-        Thread thread = new Thread(batchConsumer.Run);
-        thread.Start();
-
-        Assert.IsTrue(_latch.WaitOne(TimeSpan.FromSeconds(1)));
-
-        batchConsumer.Halt();
-        thread.Join();
-        
-        _mocks.VerifyAll();
-    }
-
-//    [Test]
-//    public void shouldCallExceptionHandlerOnUncaughtException()
-//     //   throws Exception
-//    {
-//         Exception ex = new Exception();
-//         IExceptionHandler exceptionHandler = new FatalExceptionHandler();
-//        batchConsumer.SetExceptionHandler(exceptionHandler);
-
-//        context.checking(new Expectations()
-//        {
-//            {
-//                oneOf(batchHandler).OnAvailable(ringBuffer.GetEntry(0));
-//                inSequence(lifecycleSequence);
-//                will(new Action()
-//                {
-//                    @Override
-//                    public Object invoke( Invocation invocation) throws Throwable
-//                    {
-//                        throw ex;
-//                    }
-
-//                    @Override
-//                    public void describeTo( Description description)
-//                    {
-//                        description.appendText("Throws exception");
-//                    }
-//                });
-
-//                oneOf(exceptionHandler).handle(ex, ringBuffer.getEntry(0));
-//                inSequence(lifecycleSequence);
-//                will(countDown(latch));
-
-//                oneOf(batchHandler).OnCompletion();
-//                inSequence(lifecycleSequence);
-//            }
-//        });
-
-//        Thread thread = new Thread(batchConsumer.Run);
-//        thread.Start();
-
-//        producerBarrier.Commit(producerBarrier.NextEntry());
-
-//        latch.await();
-
-//        batchConsumer.Halt();
-//        thread.Join();
-//    }
+	    [Test]
+	    public void ShouldCallMethodsInLifecycleOrderForBatch()
+	    {
+	    	//You'll notice in these tests we need to actually provide values for the entries
+	    	//This is because RhinoMocks is trying to determine what function to call
+	    	//based on what arguments are called in.  If the entries producing are all
+	    	//equivalent, it'll just call of the expected calls (the one where the argument
+	    	//matches the expectation), and the batch will never "catch up" to the ringBuffer.
+	    	using(_mocks.Ordered())
+	    	{
+	    		Expect.Call(() => batchHandler.OnAvailable(ringBuffer.GetEntry(0)));
+	    		Expect.Call(() => batchHandler.OnAvailable(ringBuffer.GetEntry(1)));
+	    		Expect.Call(() => batchHandler.OnAvailable(ringBuffer.GetEntry(2)));
+	    		
+	    		Expect.Call(() => batchHandler.OnEndOfBatch()).WhenCalled(m => _latch.Set());
+	    		Expect.Call(() => batchHandler.OnCompletion());
+	    	}
+	    	
+	    	_mocks.ReplayAll();
+	    	
+	    	var entry1 = producerBarrier.NextEntry();
+	    	entry1.Value = 100;
+	        producerBarrier.Commit(entry1);
+	        var entry2 = producerBarrier.NextEntry();
+	        entry2.Value = 101;
+	        producerBarrier.Commit(entry2);
+	        var entry3 = producerBarrier.NextEntry();
+	        entry3.Value = 102;
+	        producerBarrier.Commit(entry3);
+	
+	        Thread thread = new Thread(batchConsumer.Run);
+	        thread.Start();
+	
+	        Assert.IsTrue(_latch.WaitOne(TimeSpan.FromSeconds(1)));
+	
+	        batchConsumer.Halt();
+	        thread.Join();
+	        
+	        _mocks.VerifyAll();
+	    }
+	
+	    [Test]
+	    public void ShouldCallExceptionHandlerOnUncaughtException()
+	    {
+	        Exception ex = new Exception();
+	        IExceptionHandler exceptionHandler = _mocks.DynamicMock<IExceptionHandler>();
+	        batchConsumer.SetExceptionHandler(exceptionHandler);
+	        
+	        using(_mocks.Ordered())
+	        {
+	        	Expect.Call(() => batchHandler.OnAvailable(ringBuffer.GetEntry(0))).Throw(ex);
+	        	Expect.Call(() => exceptionHandler.Handle(ex, ringBuffer.GetEntry(0)))
+	        		.WhenCalled(m => _latch.Set());
+	        	Expect.Call(() => batchHandler.OnCompletion());
+	        }
+	
+	        _mocks.ReplayAll();
+	        
+	        Thread thread = new Thread(batchConsumer.Run);
+	        thread.Start();
+	
+	        producerBarrier.Commit(producerBarrier.NextEntry());
+	
+	        Assert.IsTrue(_latch.WaitOne(TimeSpan.FromSeconds(1)));
+	
+	        batchConsumer.Halt();
+	        thread.Join();
+	        
+	        _mocks.VerifyAll();
+	    }
 	}
 }
 
