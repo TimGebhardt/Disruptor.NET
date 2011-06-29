@@ -63,6 +63,7 @@
   <ItemGroup>
     <Compile Include="AssemblyInfo.cs" />
     <Compile Include="DisruptorTests.cs" />
+    <Compile Include="Support\StubEntry.cs" />
     <Compile Include="UtilTest.cs" />
     <Compile Include="BatchConsumerSequenceTrackTest.cs" />
     <Compile Include="BatchConsumerTests.cs" />
@@ -75,5 +76,8 @@
       <Project>{9EBDC462-73AA-4A6E-9030-AE0A2E823253}</Project>
       <Name>Disruptor</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Support" />
   </ItemGroup>
 </Project>

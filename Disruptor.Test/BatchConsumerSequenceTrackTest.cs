@@ -1,5 +1,6 @@
 using System.Threading;
 using NUnit.Framework;
+using Disruptor.Test.Support;
 
 namespace Disruptor.Test
 {

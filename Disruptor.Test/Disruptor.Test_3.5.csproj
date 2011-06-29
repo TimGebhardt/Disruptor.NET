@@ -71,6 +71,7 @@
     <Compile Include="DisruptorTests.cs" />
     <Compile Include="AssemblyInfo.cs" />
     <Compile Include="RingBufferTests.cs" />
+    <Compile Include="Support\StubEntry.cs" />
     <Compile Include="UtilTest.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -78,6 +79,9 @@
       <Project>{FAEB6D38-1235-4DCA-9646-8170188006CA}</Project>
       <Name>Disruptor_3.5</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Support" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.Targets" />
 </Project>
