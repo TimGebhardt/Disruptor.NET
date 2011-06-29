@@ -25,7 +25,6 @@ namespace Disruptor.Test
             producerBarrier.Commit(producerBarrier.NextEntry());
             producerBarrier.Commit(producerBarrier.NextEntry());
             Assert.IsTrue(onAvailableLatch.WaitOne(1000));
-            Assert.IsTrue(onAvailableLatch.WaitOne(1000));
             Assert.AreEqual(-1L, batchConsumer.Sequence);
 
             producerBarrier.Commit(producerBarrier.NextEntry());
@@ -48,7 +47,7 @@ namespace Disruptor.Test
             }
 
 
-            public void OnAvailable(StubEntry entry) // throws Exception
+            public void OnAvailable(StubEntry entry) 
             {
                 if (entry.Sequence == 2L)
                 {
@@ -62,7 +61,7 @@ namespace Disruptor.Test
             }
 
 
-            public void OnEndOfBatch() //throws Exception
+            public void OnEndOfBatch()
             {
             }
 
