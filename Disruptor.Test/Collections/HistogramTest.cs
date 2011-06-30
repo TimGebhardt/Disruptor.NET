@@ -8,176 +8,189 @@ namespace Disruptor.Test.Collections
 	[TestFixture]
 	public class HistogramTest
 	{
-	    public static readonly long[] Intervals = new long[]{ 1, 10, 100, 1000, long.MaxValue };
-	    private Histogram histogram = new Histogram(Intervals);
+#if THIRTYTWOBIT
+	    public static readonly long[] Intervals = new long[]{ 1, 10, 100, 1000, long.MaxValue-1 };
+#else
+		public static readonly long[] Intervals = new long[]{ 1, 10, 100, 1000, long.MaxValue };
+#endif
+	    private Histogram histogram;
 	
+	    [SetUp]
+	    public void SetUp()
+	    {
+	    	histogram = new Histogram(Intervals);
+	    }
+	    
 	    [Test]
 	    public void ShouldSizeBasedOnBucketConfiguration()
 	    {
 	    	Assert.AreEqual(Intervals.Length, histogram.Size);
 	    }
-	/*
+	
 	    [Test]
-	    public void shouldWalkIntervals()
+	    public void ShouldWalkIntervals()
 	    {
-	        for (int i = 0, size = histogram.getSize(); i < size; i++)
+	        for (int i = 0, size = histogram.Size; i < size; i++)
 	        {
-	            assertThat(Long.valueOf(histogram.getUpperBoundAt(i)), is(Long.valueOf(INTERVALS[i])));
+	        	Assert.AreEqual(Intervals[i], histogram.GetUpperBoundAt(i));
 	        }
 	    }
 	
 	    [Test]
-	    public void shouldConfirmIntervalsAreInitialised()
+	    public void ShouldConfirmIntervalsAreInitialised()
 	    {
-	        for (int i = 0, size = histogram.getSize(); i < size; i++)
+	        for (int i = 0, size = histogram.Size; i < size; i++)
 	        {
-	            assertThat(Long.valueOf(histogram.getCountAt(i)), is(Long.valueOf(0L)));
+	        	Assert.AreEqual(0L, histogram.GetCountAt(i));
 	        }
 	    }
 	
-	    [Test](expected = IllegalArgumentException.class)
-	    public void shouldThrowExceptionWhenIntervalLessThanOrEqualToZero()
+	    [Test][ExpectedException(typeof(ArgumentOutOfRangeException))]
+	    public void ShouldThrowExceptionWhenIntervalLessThanOrEqualToZero()
 	    {
 	        new Histogram(new long[]{-1, 10, 20});
 	    }
 	
-	    [Test](expected = IllegalArgumentException.class)
-	    public void shouldThrowExceptionWhenIntervalDoNotIncrease()
+	    [Test][ExpectedException(typeof(ArgumentOutOfRangeException))]
+	    public void ShouldThrowExceptionWhenIntervalDoNotIncrease()
 	    {
 	        new Histogram(new long[]{1, 10, 10, 20});
 	    }
 	
 	    [Test]
-	    public void shouldAddObservation()
+	    public void ShouldAddObservation()
 	    {
-	        assertTrue(histogram.addObservation(10L));
-	        assertThat(Long.valueOf(histogram.getCountAt(1)), is(Long.valueOf(1L)));
+	        Assert.IsTrue(histogram.AddObservation(10L));
+	        Assert.AreEqual(1L, histogram.GetCountAt(1));
 	    }
 	
 	    [Test]
-	    public void shouldNotAddObservation()
+	    public void ShouldNotAddObservation()
 	    {
-	        Histogram histogram = new Histogram(new long[]{ 10, 20, 30 });
-	        assertFalse(histogram.addObservation(31));
+	        Assert.IsFalse(new Histogram(new long[]{ 10, 20, 30 }).AddObservation(31));
 	    }
 	
 	    [Test]
-	    public void shouldAddObservations()
+	    public void ShouldAddObservations()
 	    {
-	        addObservations(histogram, 10L, 30L, 50L);
+	        AddObservations(histogram, 10L, 30L, 50L);
 	
-	        Histogram histogram2 = new Histogram(INTERVALS);
-	        addObservations(histogram2, 10L, 20L, 25L);
+	        Histogram histogram2 = new Histogram(Intervals);
+	        AddObservations(histogram2, 10L, 20L, 25L);
 	
-	        histogram.addObservations(histogram2);
+	        histogram.AddObservations(histogram2);
 	
-	        assertThat(Long.valueOf(6L), is(Long.valueOf(histogram.getCount())));
+	        Assert.AreEqual(6L, histogram.Count);
 	    }
 	
-	    [Test](expected = IllegalArgumentException.class)
-	    public void shouldThrowExceptionWhenIntervalsDoNotMatch()
+	    [Test][ExpectedException(typeof(ArgumentOutOfRangeException))]
+	    public void ShouldThrowExceptionWhenIntervalsDoNotMatch()
 	    {
 	        Histogram histogram2 = new Histogram(new long[]{ 1L, 2L, 3L});
-	        histogram.addObservations(histogram2);
+	        histogram.AddObservations(histogram2);
 	    }
 	
 	    [Test]
-	    public void shouldClearCounts()
+	    public void ShouldClearCounts()
 	    {
-	        addObservations(histogram, 1L, 7L, 10L, 3000L);
-	        histogram.clear();
+	        AddObservations(histogram, 1L, 7L, 10L, 3000L);
+	        histogram.Clear();
 	
-	        for (int i = 0, size = histogram.getSize(); i < size; i++)
+	        for (int i = 0, size = histogram.Size; i < size; i++)
 	        {
-	            assertThat(Long.valueOf(histogram.getCountAt(i)), is(Long.valueOf(0)));
+	        	Assert.AreEqual(0, histogram.GetCountAt(i));
 	        }
 	    }
 	
 	    [Test]
-	    public void shouldCountTotalObservations()
+	    public void ShouldCountTotalObservations()
 	    {
-	        addObservations(histogram, 1L, 7L, 10L, 3000L);
+	        AddObservations(histogram, 1L, 7L, 10L, 3000L);
 	
-	        assertThat(Long.valueOf(histogram.getCount()), is(Long.valueOf(4L)));
+	        Assert.AreEqual(4L, histogram.Count);
 	    }
 	
 	    [Test]
-	    public void shouldGetMeanObservation()
+	    public void ShouldGetMeanObservation()
 	    {
-	        final long[] INTERVALS = new long[]{ 1, 10, 100, 1000, 10000 };
-	        final Histogram histogram = new Histogram(INTERVALS);
+	        long[] intervals = new long[]{ 1, 10, 100, 1000, 10000 };
+	        Histogram histogram2 = new Histogram(intervals);
 	
-	        addObservations(histogram, 1L, 7L, 10L, 10L, 11L, 144L);
+	        AddObservations(histogram2, 1L, 7L, 10L, 10L, 11L, 144L);
 	
-	        assertThat(histogram.getMean(), is(new BigDecimal("32.67")));
+	        Assert.AreEqual(32.666666666666666666666666667m, histogram2.CalculateMean());	    
 	    }
 	
 	    [Test]
-	    public void shouldCorrectMeanForSkewInTopAndBottomPopulatedIntervals()
+	    public void ShouldCorrectMeanForSkewInTopAndBottomPopulatedIntervals()
 	    {
-	        final long[] INTERVALS = new long[]{ 100, 110, 120, 130, 140, 150, 1000, 10000 };
-	        final Histogram histogram = new Histogram(INTERVALS);
+	        long[] intervals = new long[]{ 100, 110, 120, 130, 140, 150, 1000, 10000 };
+	        Histogram histogram2 = new Histogram(intervals);
 	
 	        for (long i = 100; i < 152; i++)
 	        {
-	            histogram.addObservation(i);
+	            histogram2.AddObservation(i);
 	        }
 	
-	        assertThat(histogram.getMean(), is(new BigDecimal("125.02")));
+	        Assert.AreEqual(125.01923076923076923076923077m, histogram2.CalculateMean());
 	    }
 	
 	    [Test]
-	    public void shouldGetMaxObservation()
+	    public void ShouldGetMaxObservation()
 	    {
-	        addObservations(histogram, 1L, 7L, 10L, 10L, 11L, 144L);
+	        AddObservations(histogram, 1L, 7L, 10L, 10L, 11L, 144L);
 	
-	        assertThat(Long.valueOf(histogram.getMax()), is(Long.valueOf(144L)));
+	        Assert.AreEqual(144L, histogram.Max);
 	    }
 	
 	    [Test]
-	    public void shouldGetMinObservation()
+	    public void ShouldGetMinObservation()
 	    {
-	        addObservations(histogram, 1L, 7L, 10L, 10L, 11L, 144L);
+	        AddObservations(histogram, 1L, 7L, 10L, 10L, 11L, 144L);
 	
-	        assertThat(Long.valueOf(histogram.getMin()), is(Long.valueOf(1L)));
+	        Assert.AreEqual(1L, histogram.Min);
 	    }
 	
 	    [Test]
-	    public void shouldGetTwoNinesUpperBound()
+	    public void ShouldGetTwoNinesUpperBound()
 	    {
-	        final long[] INTERVALS = new long[]{ 1, 10, 100, 1000, 10000 };
-	        final Histogram histogram = new Histogram(INTERVALS);
+	        long[] intervals = new long[]{ 1, 10, 100, 1000, 10000 };
+	        Histogram histogram2 = new Histogram(intervals);
 	
 	        for (long i = 1; i < 101; i++)
 	        {
-	            histogram.addObservation(i);
+	            histogram2.AddObservation(i);
 	        }
 	
-	        assertThat(Long.valueOf(histogram.getTwoNinesUpperBound()), is(Long.valueOf(100L)));
+	        Assert.AreEqual(100L, histogram2.GetTwoNinesUpperBound());
 	    }
 	
 	    [Test]
-	    public void shouldGetFourNinesUpperBound()
+	    public void ShouldGetFourNinesUpperBound()
 	    {
-	        final long[] INTERVALS = new long[]{ 1, 10, 100, 1000, 10000 };
-	        final Histogram histogram = new Histogram(INTERVALS);
+	        long[] intervals = new long[]{ 1, 10, 100, 1000, 10000 };
+	        Histogram histogram2 = new Histogram(intervals);
 	
 	        for (long i = 1; i < 102; i++)
 	        {
-	            histogram.addObservation(i);
+	            histogram2.AddObservation(i);
 	        }
 	
-	        assertThat(Long.valueOf(histogram.getFourNinesUpperBound()), is(Long.valueOf(1000L)));
+	        Assert.AreEqual(1000L, histogram2.GetFourNinesUpperBound());
 	    }
-	
+
 	    [Test]
-	    public void shouldToString()
+	    public void ShouldToString()
 	    {
-	        addObservations(histogram, 1L, 7L, 10L, 300L);
-	
-	        String expectedResults = "Histogram{min=1, max=300, mean=53.25, 99%=1000, 99.99%=1000, [1=1, 10=2, 100=0, 1000=1, 9223372036854775807=0]}";
-	        assertThat(histogram.toString(), is(expectedResults));
-	    } */
+	        AddObservations(histogram, 1L, 7L, 10L, 300L);
+	      
+#if THIRTYTWOBIT
+	    string expectedResults = "Histogram{min=1, max=300, mean=53.25, 99%=1000, 99.99%=1000, [1=1, 10=2, 100=0, 1000=1, 9223372036854775806=0]}";
+#else
+		string expectedResults = "Histogram{min=1, max=300, mean=53.25, 99%=1000, 99.99%=1000, [1=1, 10=2, 100=0, 1000=1, 9223372036854775807=0]}";
+#endif	
+	        Assert.AreEqual(expectedResults, histogram.ToString());
+	    }
 	
 		private void AddObservations(Histogram histogram, params long[] observations)
 	    {
