@@ -10,11 +10,22 @@ namespace Disruptor
 {
     public class IgnoreExceptionHandler : IExceptionHandler
     {
-        private static readonly ILog _logger = LogManager.GetLogger("IgnoreExceptionHandler");
-
+    	private static readonly ILog Logger = LogManager.GetLogger(typeof(IgnoreExceptionHandler));
+    	private ILog _log;
+    	
+    	public IgnoreExceptionHandler()
+    	{
+    		_log = Logger;
+    	}
+    	
+    	public IgnoreExceptionHandler(ILog log)
+    	{
+    		_log = log;
+    	}
+    	
         public void Handle(Exception ex, IEntry currentEntry)
         {
-            _logger.Error("Exception processing: " + currentEntry, ex);
+            _log.Info("Exception processing: " + currentEntry, ex);
         }
     }
 }
