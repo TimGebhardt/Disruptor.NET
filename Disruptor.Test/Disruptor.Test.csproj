@@ -65,6 +65,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AssemblyInfo.cs" />
+    <Compile Include="Collections\HistogramTest.cs" />
     <Compile Include="DisruptorTests.cs" />
     <Compile Include="EntryTranslatorTest.cs" />
     <Compile Include="FatalExceptionHandlerTest.cs" />
@@ -85,6 +86,7 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <Folder Include="Collections" />
     <Folder Include="Support" />
   </ItemGroup>
 </Project>

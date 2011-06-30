@@ -70,6 +70,7 @@
   <ItemGroup>
     <Compile Include="BatchConsumerSequenceTrackTest.cs" />
     <Compile Include="BatchConsumerTests.cs" />
+    <Compile Include="Collections\HistogramTest.cs" />
     <Compile Include="ConsumerBarrierTests.cs" />
     <Compile Include="DisruptorTests.cs" />
     <Compile Include="AssemblyInfo.cs" />
@@ -88,6 +89,7 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <Folder Include="Collections" />
     <Folder Include="Support" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.Targets" />

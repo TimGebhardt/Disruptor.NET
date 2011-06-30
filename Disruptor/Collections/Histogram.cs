@@ -12,10 +12,10 @@ namespace Disruptor.Collections
 {
     public class Histogram
     {
-        private long[] upperBounds;
-        private readonly long[] counts;
-        private long minValue = long.MaxValue;
-        private long maxValue;
+        private long[] _upperBounds;
+        private readonly long[] _counts;
+        private long _minValue = long.MaxValue;
+        private long _maxValue;
 
         /**
      * Create a new Histogram with a provided list of interval bounds.
@@ -25,13 +25,14 @@ namespace Disruptor.Collections
 
         public Histogram(long[] upperBounds)
         {
-            validateBounds(upperBounds);
-
-            Array.Copy(upperBounds, this.upperBounds, upperBounds.Length);
-            counts = new long[upperBounds.Length];
+            ValidateBounds(upperBounds);
+			
+            _upperBounds = new long[upperBounds.Length];
+            Array.Copy(upperBounds, _upperBounds, upperBounds.Length);
+            _counts = new long[upperBounds.Length];
         }
 
-        private void validateBounds(long[] upperBounds)
+        private void ValidateBounds(long[] upperBounds)
         {
             long lastBound = -1L;
             foreach (long bound in upperBounds)
@@ -55,10 +56,9 @@ namespace Disruptor.Collections
      *
      * @return size of the interval bar list.
      */
-
-        public int getSize()
+        public int Size
         {
-            return upperBounds.Length;
+        	get { return _upperBounds.Length; }
         }
 
         /**
@@ -68,9 +68,9 @@ namespace Disruptor.Collections
      * @return the interval upper bound for the index.
      */
 
-        public long getUpperBoundAt(int index)
+        public long GetUpperBoundAt(int index)
         {
-            return upperBounds[index];
+            return _upperBounds[index];
         }
 
         /**
@@ -80,9 +80,9 @@ namespace Disruptor.Collections
      * @return the count of observations at a given index.
      */
 
-        public long getCountAt(int index)
+        public long GetCountAt(int index)
         {
-            return counts[index];
+            return _counts[index];
         }
 
         /**
@@ -92,15 +92,15 @@ namespace Disruptor.Collections
      * @return return true if in the range of intervals otherwise false.
      */
 
-        public bool addObservation(long value)
+        public bool AddObservation(long value)
         {
             int low = 0;
-            int high = upperBounds.Length - 1;
+            int high = _upperBounds.Length - 1;
 
             while (low < high)
             {
                 int mid = low + ((high - low) >> 1);
-                if (upperBounds[mid] < value)
+                if (_upperBounds[mid] < value)
                 {
                     low = mid + 1;
                 }
@@ -110,10 +110,10 @@ namespace Disruptor.Collections
                 }
             }
 
-            if (value <= upperBounds[high])
+            if (value <= _upperBounds[high])
             {
-                counts[high]++;
-                trackRange(value);
+                _counts[high]++;
+                TrackRange(value);
 
                 return true;
             }
@@ -121,15 +121,15 @@ namespace Disruptor.Collections
             return false;
         }
 
-        private void trackRange(long value)
+        private void TrackRange(long value)
         {
-            if (value < minValue)
+            if (value < _minValue)
             {
-                minValue = value;
+                _minValue = value;
             }
-            else if (value > maxValue)
+            else if (value > _maxValue)
             {
-                maxValue = value;
+                _maxValue = value;
             }
         }
 
@@ -140,42 +140,42 @@ namespace Disruptor.Collections
      * @param histogram from which to add the observation counts.
      */
 
-        public void addObservations(Histogram histogram)
+        public void AddObservations(Histogram histogram)
         {
-            if (upperBounds.Length != histogram.upperBounds.Length)
+            if (_upperBounds.Length != histogram._upperBounds.Length)
             {
                 throw new ArgumentOutOfRangeException("Histograms must have matching intervals");
             }
 
-            for (int i = 0, size = upperBounds.Length; i < size; i++)
+            for (int i = 0, size = _upperBounds.Length; i < size; i++)
             {
-                if (upperBounds[i] != histogram.upperBounds[i])
+                if (_upperBounds[i] != histogram._upperBounds[i])
                 {
                     throw new ArgumentOutOfRangeException("Histograms must have matching intervals");
                 }
             }
 
-            for (int i = 0, size = counts.Length; i < size; i++)
+            for (int i = 0, size = _counts.Length; i < size; i++)
             {
-                counts[i] += histogram.counts[i];
+                _counts[i] += histogram._counts[i];
             }
 
-            trackRange(histogram.minValue);
-            trackRange(histogram.maxValue);
+            TrackRange(histogram._minValue);
+            TrackRange(histogram._maxValue);
         }
 
         /**
      * Clear the list of interval counters.
      */
 
-        public void clear()
+        public void Clear()
         {
-            maxValue = 0L;
-            minValue = long.MaxValue;
+            _maxValue = 0L;
+            _minValue = long.MaxValue;
 
-            for (int i = 0, size = counts.Length; i < size; i++)
+            for (int i = 0, size = _counts.Length; i < size; i++)
             {
-                counts[i] = 0L;
+                _counts[i] = 0L;
             }
         }
 
@@ -185,16 +185,19 @@ namespace Disruptor.Collections
      * @return the total number of recorded observations.
      */
 
-        public long getCount()
+        public long Count
         {
-            long count = 0L;
-
-            for (int i = 0, size = counts.Length; i < size; i++)
-            {
-                count += counts[i];
-            }
-
-            return count;
+        	get 
+        	{
+	            long count = 0L;
+	
+	            for (int i = 0, size = _counts.Length; i < size; i++)
+	            {
+	                count += _counts[i];
+	            }
+	
+	            return count;
+        	}
         }
 
         /**
@@ -203,9 +206,9 @@ namespace Disruptor.Collections
      * @return the minimum value observed.
      */
 
-        public long getMin()
+        public long Min
         {
-            return minValue;
+        	get { return _minValue; }
         }
 
         /**
@@ -214,9 +217,9 @@ namespace Disruptor.Collections
      * @return the maximum of the observed values;
      */
 
-        public long getMax()
+        public long Max
         {
-            return maxValue;
+        	get { return _maxValue; }
         }
 
         /**
@@ -229,22 +232,22 @@ namespace Disruptor.Collections
      * @return the mean of all recorded observations.
      */
 
-        public decimal getMean()
+        public decimal CalculateMean()
         {
-            long lowerBound = counts[0] > 0L ? minValue : 0L;
+            long lowerBound = _counts[0] > 0L ? _minValue : 0L;
             decimal total = 0;
 
-            for (int i = 0, size = upperBounds.Length; i < size; i++)
+            for (int i = 0, size = _upperBounds.Length; i < size; i++)
             {
-                long upperBound = Math.Min(upperBounds[i], maxValue);
+                long upperBound = Math.Min(_upperBounds[i], _maxValue);
                 long midPoint = lowerBound + ((upperBound - lowerBound)/2L);
 
-                decimal intervalTotal = midPoint*counts[i];
+                decimal intervalTotal = midPoint*_counts[i];
                 total += intervalTotal;
-                lowerBound = Math.Max(upperBounds[i] + 1L, minValue);
+                lowerBound = Math.Max(_upperBounds[i] + 1L, _minValue);
             }
 
-            return total/getCount();
+            return total/Count;
         }
 
         /**
@@ -253,9 +256,9 @@ namespace Disruptor.Collections
      * @return the upper bound for 99% of observations.
      */
 
-        public long getTwoNinesUpperBound()
+        public long GetTwoNinesUpperBound()
         {
-            return getUpperBoundForFactor(0.99d);
+            return GetUpperBoundForFactor(0.99d);
         }
 
         /**
@@ -264,9 +267,9 @@ namespace Disruptor.Collections
      * @return the upper bound for 99.99% of observations.
      */
 
-        public long getFourNinesUpperBound()
+        public long GetFourNinesUpperBound()
         {
-            return getUpperBoundForFactor(0.9999d);
+            return GetUpperBoundForFactor(0.9999d);
         }
 
         /**
@@ -276,25 +279,25 @@ namespace Disruptor.Collections
      * @return the interval upper bound.
      */
 
-        public long getUpperBoundForFactor(double factor)
+        public long GetUpperBoundForFactor(double factor)
         {
             if (0.0d >= factor || factor >= 1.0d)
             {
                 throw new ArgumentOutOfRangeException("factor must be >= 0.0 and <= 1.0");
             }
 
-            long totalCount = getCount();
+            long totalCount = Count;
             long tailTotal = totalCount - (long) Math.Round(totalCount*factor);
             long tailCount = 0L;
 
-            for (int i = counts.Length - 1; i >= 0; i--)
+            for (int i = _counts.Length - 1; i >= 0; i--)
             {
-                if (0L != counts[i])
+                if (0L != _counts[i])
                 {
-                    tailCount += counts[i];
+                    tailCount += _counts[i];
                     if (tailCount >= tailTotal)
                     {
-                        return upperBounds[i];
+                        return _upperBounds[i];
                     }
                 }
             }
@@ -303,25 +306,25 @@ namespace Disruptor.Collections
         }
 
 
-        public string toString()
+        public override string ToString()
         {
             var sb = new StringBuilder();
 
             sb.Append("Histogram{");
 
-            sb.Append("min=").Append(getMin()).Append(", ");
-            sb.Append("max=").Append(getMax()).Append(", ");
-            sb.Append("mean=").Append(getMean()).Append(", ");
-            sb.Append("99%=").Append(getTwoNinesUpperBound()).Append(", ");
-            sb.Append("99.99%=").Append(getFourNinesUpperBound()).Append(", ");
+            sb.Append("min=").Append(Min).Append(", ");
+            sb.Append("max=").Append(Max).Append(", ");
+            sb.Append("mean=").Append(CalculateMean()).Append(", ");
+            sb.Append("99%=").Append(GetTwoNinesUpperBound()).Append(", ");
+            sb.Append("99.99%=").Append(GetFourNinesUpperBound()).Append(", ");
 
             sb.Append('[');
-            for (int i = 0, size = counts.Length; i < size; i++)
+            for (int i = 0, size = _counts.Length; i < size; i++)
             {
-                sb.Append(upperBounds[i]).Append('=').Append(counts[i]).Append(", ");
+                sb.Append(_upperBounds[i]).Append('=').Append(_counts[i]).Append(", ");
             }
 
-            if (counts.Length > 0)
+            if (_counts.Length > 0)
             {
                 sb.Length = (sb.Length - 2);
             }
