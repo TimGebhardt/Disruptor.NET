@@ -10,14 +10,24 @@ namespace Disruptor
 {
     public class FatalExceptionHandler : IExceptionHandler
     {
-        private static readonly ILog _logger = LogManager.GetLogger("FatalException");
-
+    	private static readonly ILog Logger = LogManager.GetLogger(typeof(FatalExceptionHandler));
+		private readonly ILog _log;
+		
+		public FatalExceptionHandler()
+		{
+			_log = Logger;
+		}
+		
+		public FatalExceptionHandler(ILog log)
+		{
+			_log = log;
+		}
 
         public void Handle(Exception ex, IEntry currentEntry)
         {
-            _logger.Fatal("Exception processing: " + currentEntry, ex);
+            _log.Fatal("Exception processing: " + currentEntry, ex);
 
-            throw ex;
+            throw new ApplicationException("Application produced a fatal exception", ex);;
         }
     }
 }

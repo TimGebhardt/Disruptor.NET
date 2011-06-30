@@ -73,6 +73,7 @@
     <Compile Include="ConsumerBarrierTests.cs" />
     <Compile Include="DisruptorTests.cs" />
     <Compile Include="AssemblyInfo.cs" />
+    <Compile Include="FatalExceptionHandlerTest.cs" />
     <Compile Include="IgnoreExceptionHandlerTest.cs" />
     <Compile Include="RingBufferTests.cs" />
     <Compile Include="Support\StubEntry.cs" />

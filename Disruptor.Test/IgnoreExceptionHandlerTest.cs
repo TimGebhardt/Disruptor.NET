@@ -18,12 +18,14 @@ namespace Disruptor.Test
 	        Exception ex = new Exception();
 	        IEntry entry = new TestEntry();
 	
-	        ILog logger = _mocks.DynamicMock<ILog>();
+	        ILog logger = _mocks.StrictMock<ILog>();
 	        
-	        Expect.Call(() => logger.Info("Exception processing: " + entry, ex)).Repeat.Never();
+	        Expect.Call(() => logger.Info("Exception processing: " + entry, ex));
 	
+	        _mocks.ReplayAll();
 	        IExceptionHandler exceptionHandler = new IgnoreExceptionHandler(logger);
 	        exceptionHandler.Handle(ex, entry);
+	        _mocks.VerifyAll();
 	    }
 	}
 }

@@ -11,7 +11,7 @@ namespace Disruptor
     public class IgnoreExceptionHandler : IExceptionHandler
     {
     	private static readonly ILog Logger = LogManager.GetLogger(typeof(IgnoreExceptionHandler));
-    	private ILog _log;
+    	private readonly ILog _log;
     	
     	public IgnoreExceptionHandler()
     	{
