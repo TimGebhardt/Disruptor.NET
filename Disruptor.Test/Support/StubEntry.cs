@@ -17,7 +17,6 @@ namespace Disruptor.Test.Support
             Value = entry.Value;
         }
 
-
         public override int GetHashCode()
         {
             int prime = 31;
@@ -25,7 +24,6 @@ namespace Disruptor.Test.Support
             result = prime*result + Value;
             return result;
         }
-
 
         public override bool Equals(object obj)
         {

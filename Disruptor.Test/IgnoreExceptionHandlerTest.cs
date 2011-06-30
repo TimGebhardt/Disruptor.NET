@@ -13,7 +13,7 @@ namespace Disruptor.Test
 		private MockRepository _mocks = new MockRepository();
 	
 		[Test]
-	    public void shouldHandleAndIgnoreException()
+	    public void ShouldHandleAndIgnoreException()
 	    {
 	        Exception ex = new Exception();
 	        IEntry entry = new TestEntry();

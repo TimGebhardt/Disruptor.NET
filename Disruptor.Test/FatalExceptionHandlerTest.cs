@@ -12,7 +12,7 @@ namespace Disruptor.Test
 		private MockRepository _mocks = new MockRepository();
 	
 		[Test]
-	    public void shouldHandleFatalException()
+	    public void ShouldHandleFatalException()
 	    {
 	        Exception causeException = new Exception();
 	        IEntry entry = new TestEntry();

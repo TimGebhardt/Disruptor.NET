@@ -66,6 +66,7 @@
   <ItemGroup>
     <Compile Include="AssemblyInfo.cs" />
     <Compile Include="DisruptorTests.cs" />
+    <Compile Include="EntryTranslatorTest.cs" />
     <Compile Include="FatalExceptionHandlerTest.cs" />
     <Compile Include="IgnoreExceptionHandlerTest.cs" />
     <Compile Include="Support\StubEntry.cs" />
