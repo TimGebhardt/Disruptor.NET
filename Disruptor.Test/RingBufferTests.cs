@@ -44,7 +44,7 @@ namespace Disruptor.Test
         }
 
         [Test]
-        public void ShouldClaimAndGetWithTimeout() // 
+        public void ShouldClaimAndGetWithTimeout()
         {
             Assert.AreEqual(-1L, ringBuffer.Cursor);
 
@@ -160,14 +160,14 @@ namespace Disruptor.Test
 
 	    private Task<List<StubEntry>> GetMessages(long initial, long toWaitFor)
 	    {
-	        var barrier = new AutoResetEvent(false);
+	        var latch = new AutoResetEvent(false);
 	        var consumerBarrier = ringBuffer.CreateConsumerBarrier();
 	
 	        Task<List<StubEntry>> f = new Task<List<StubEntry>>(
-				new TestWaiter(barrier, consumerBarrier, initial, toWaitFor).Call);
+				new TestWaiter(latch, consumerBarrier, initial, toWaitFor).Call);
 			f.Start();
 	
-	        barrier.WaitOne(TimeSpan.FromSeconds(10));
+			Assert.IsTrue(latch.WaitOne(TimeSpan.FromSeconds(1)));
 	
 	        return f;
 	    }
@@ -177,15 +177,15 @@ namespace Disruptor.Test
     {
         private readonly long toWaitForSequence;
         private readonly long initialSequence;
-        private AutoResetEvent barrier;
+        private AutoResetEvent latch;
         private readonly IConsumerBarrier<StubEntry> consumerBarrier;
 
-        public TestWaiter(AutoResetEvent barrier,
+        public TestWaiter(AutoResetEvent latch,
                           IConsumerBarrier<StubEntry> consumerBarrier,
                           long initialSequence,
                           long toWaitForSequence)
         {
-            this.barrier = barrier;
+            this.latch = latch;
             this.initialSequence = initialSequence;
             this.toWaitForSequence = toWaitForSequence;
             this.consumerBarrier = consumerBarrier;
@@ -194,7 +194,7 @@ namespace Disruptor.Test
 
         public List<StubEntry> Call()
         {
-            barrier.Set();
+            latch.Set();
             consumerBarrier.WaitFor(toWaitForSequence);
 			
 			List<StubEntry> retval = new List<StubEntry>();

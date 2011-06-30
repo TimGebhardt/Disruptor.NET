@@ -37,9 +37,9 @@ namespace Disruptor.Test
 	    public void ShouldReturnMinimumSequence()
 	    {
 	        IConsumer[] consumers = new IConsumer[3];
-	        consumers[0] = _mocks.StrictMock<IConsumer>();
-	        consumers[1] = _mocks.StrictMock<IConsumer>();
-	        consumers[2] = _mocks.StrictMock<IConsumer>();
+	        consumers[0] = _mocks.DynamicMock<IConsumer>();
+	        consumers[1] = _mocks.DynamicMock<IConsumer>();
+	        consumers[2] = _mocks.DynamicMock<IConsumer>();
 	
 			Expect.Call(consumers[0].Sequence).Return(7L);
 			Expect.Call(consumers[1].Sequence).Return(3L);
@@ -55,7 +55,7 @@ namespace Disruptor.Test
 		[Test]
 	    public void ShouldReturnLongMaxWhenNoConsumers()
 	    {
-	        IConsumer[] consumers = new BatchConsumer<IEntry>[0];
+	        IConsumer[] consumers = new IConsumer[0];
 	        Assert.AreEqual(long.MaxValue, Util.GetMinimumSequence(consumers));
 	    }
 	}
