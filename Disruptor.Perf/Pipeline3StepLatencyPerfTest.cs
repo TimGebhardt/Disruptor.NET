@@ -73,7 +73,7 @@ namespace Disruptor.Perf
 	{
 		private static int NUM_CONSUMERS = 3;
 		private static int SIZE = 1024*32;
-		private static long ITERATIONS = 1000;//* 1000 * 50;
+		private static long ITERATIONS = 1000 * 1000 * 50;
 		private static long PAUSE_NANOS = 1000;
 		private Histogram _histogram;
 		
