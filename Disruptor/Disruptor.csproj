@@ -67,6 +67,9 @@
     <Compile Include="IForceFillProducerBarrier.cs" />
     <Compile Include="IgnoreExceptionHandler.cs" />
     <Compile Include="IRingBuffer.cs" />
+    <Compile Include="MemoryLayout\CacheLinePadding.cs" />
+    <Compile Include="MemoryLayout\CacheLineStorageBool.cs" />
+    <Compile Include="MemoryLayout\CacheLineStorageLong.cs" />
     <Compile Include="NoOpConsumer.cs" />
     <Compile Include="IProducerBarrier.cs" />
     <Compile Include="AssemblyInfo.cs" />
@@ -74,6 +77,9 @@
     <Compile Include="ISequenceTrackingHandler.cs" />
     <Compile Include="Util.cs" />
     <Compile Include="IWaitStrategy.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="MemoryLayout" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

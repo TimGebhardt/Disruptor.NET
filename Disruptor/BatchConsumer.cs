@@ -7,22 +7,19 @@
 
 using System;
 using System.Threading;
+using Disruptor.MemoryLayout;
 
 namespace Disruptor
 {
     public class BatchConsumer<T> : IConsumer
         where T : IEntry
     {
-        public long p1, p2, p3, p4, p5, p6, p7; // cache line padding
-        private volatile bool _running = true;
-        public long p8, p9, p10, p11, p12, p13, p14; // cache line padding
-        private long _sequence = -1L;
-        public long p15, p16, p17, p18, p19, p20, p21;
+    	private CacheLineStorageBool _running = new CacheLineStorageBool(true);
+    	private CacheLineStorageLong _sequence = new CacheLineStorageLong(-1L);
 		
 		public long Sequence 
 		{
-			get { return Thread.VolatileRead(ref _sequence); }
-			private set { Thread.VolatileWrite(ref _sequence, value); }
+			get { return _sequence.Data; }
 		}
 		
         private readonly IConsumerBarrier<T> _consumerBarrier;
@@ -65,17 +62,17 @@ namespace Disruptor
 
         public void Halt()
         {
-            _running = false;
+            _running.Data = false;
             _consumerBarrier.Alert();
         }
 
 // It is ok to have another thread rerun this method after a halt().
         public void Run()
         {
-            _running = true;
+            _running.Data = true;
             T entry = default(T);
 
-            while (_running)
+            while (_running.Data)
             {
                 try
                 {
@@ -89,7 +86,7 @@ namespace Disruptor
 
                         if (_noSequenceTracker)
                         {
-                            Sequence = entry.Sequence;
+                            _sequence.Data = entry.Sequence;
                         }
                     }
 
@@ -104,7 +101,7 @@ namespace Disruptor
                     _exceptionHandler.Handle(ex, entry);
                     if (_noSequenceTracker)
                     {
-                        Sequence = entry.Sequence;
+                        _sequence.Data = entry.Sequence;
                     }
                 }
             }
@@ -123,7 +120,7 @@ namespace Disruptor
 
             public void OnCompleted(long sequence)
             {
-                _batchConsumer.Sequence = sequence;
+                _batchConsumer._sequence.Data = sequence;
             }
         }
     }

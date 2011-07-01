@@ -32,6 +32,6 @@ namespace Disruptor
      *
      * @return value of the cursor for entries that have been published.
      */
-        long GetCursor();
+    long Cursor { get; }
     }
 }

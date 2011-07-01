@@ -6,23 +6,19 @@
 
 using System;
 using System.Threading;
+using Disruptor.MemoryLayout;
 
 namespace Disruptor
 {
     public class RingBuffer<T> : IRingBuffer<T> where T : IEntry
     {
         public const long InitialCursorValue = -1L;
+        
+        private CacheLineStorageLong _cursor = new CacheLineStorageLong(InitialCursorValue);
 
-        public long p1, p2, p3, p4, p5, p6, p7; // cache line padding
-
-        private long _cursor = InitialCursorValue;
-
-        public long p8, p9, p10, p11, p12, p13, p14; // cache line padding
-		
 		public long Cursor
 		{
-			get { return Thread.VolatileRead(ref _cursor); }
-			private set { Thread.VolatileWrite(ref _cursor, value); }
+			get { return _cursor.Data; }
 		}
 
         private readonly T[] _entries;
@@ -183,7 +179,7 @@ namespace Disruptor
             {
                 long sequence = entry.Sequence;
                 _ringBuffer._claimStrategy.WaitForCursor(sequence - 1L, _ringBuffer);
-                _ringBuffer.Cursor = sequence;
+                _ringBuffer._cursor.Data = sequence;
                 _ringBuffer._waitStrategy.SignalAll();
             }
 
@@ -243,15 +239,11 @@ namespace Disruptor
             {
                 long sequence = entry.Sequence;
                 _ringBuffer._claimStrategy.SetSequence(sequence + 1L);
-                _ringBuffer.Cursor = sequence;
+                _ringBuffer._cursor.Data = sequence;
                 _ringBuffer._waitStrategy.SignalAll();
             }
-
-
-            public long GetCursor()
-            {
-                return _ringBuffer.Cursor;
-            }
+            
+            public long Cursor { get { return _ringBuffer._cursor.Data; } }
 
             private void EnsureConsumersAreInRange(long sequence)
             {

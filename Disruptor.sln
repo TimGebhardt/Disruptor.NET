@@ -1,6 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 11.00
-# Visual C# Express 2010
+# Visual Studio 2010
+# SharpDevelop 4.0.0.7070
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Disruptor", "Disruptor\Disruptor.csproj", "{9EBDC462-73AA-4A6E-9030-AE0A2E823253}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Disruptor.Test", "Disruptor.Test\Disruptor.Test.csproj", "{500F9421-7756-4AB9-9388-CCF7DCE01338}"

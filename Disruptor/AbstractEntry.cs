@@ -1,14 +1,15 @@
 using System.Threading;
+using Disruptor.MemoryLayout;
 
 namespace Disruptor
 {
     public abstract class AbstractEntry : IEntry
     {
-    	private long _sequence;
+    	private CacheLineStorageLong _sequence;
         public long Sequence 
         {
-        	get { return Thread.VolatileRead(ref _sequence); }
-        	set { Thread.VolatileWrite(ref _sequence, value); }
+        	get { return _sequence.Data; }
+        	set { _sequence.Data = value; }
         }
     }
 }
