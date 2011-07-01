@@ -73,7 +73,7 @@ namespace Disruptor.Perf
 	{
 		private static int NUM_CONSUMERS = 3;
 		private static int SIZE = 1024*32;
-		private static long ITERATIONS = 50; //1000; //* 1000 * 50;
+		private static long ITERATIONS = 1000;//* 1000 * 50;
 		private static long PAUSE_NANOS = 1000;
 		private Histogram _histogram;
 		
@@ -96,7 +96,10 @@ namespace Disruptor.Perf
 		private readonly Stopwatch _stopwatch = new Stopwatch();
 
 		public Pipeline3StepLatencyPerfTest()
-		{			
+		{
+            InitHistogram();
+            InitStopwatchTimeCostNs();
+
 			ringBuffer =
 				new RingBuffer<ValueEntry>(new ValueEntryFactory(), SIZE,
 			                              new SingleThreadedStrategy(),
@@ -114,9 +117,6 @@ namespace Disruptor.Perf
 			stepThreeBatchConsumer = new BatchConsumer<ValueEntry>(stepThreeConsumerBarrier, stepThreeFunctionHandler);
 
 			producerBarrier = ringBuffer.CreateProducerBarrier(stepThreeBatchConsumer);
-
-			InitHistogram();
-			InitStopwatchTimeCostNs();
 		}
 		
 		private void InitHistogram()
@@ -135,7 +135,7 @@ namespace Disruptor.Perf
 		
 		private void InitStopwatchTimeCostNs()
 		{
-			long iterations = 10000000;
+            long iterations = 10000000;
 			var stopwatch = new Stopwatch();
 			stopwatch.Start();
 			
@@ -152,7 +152,6 @@ namespace Disruptor.Perf
 			dummy = stopwatch.GetElapsedNanoSeconds();
 			stopwatch.Stop();
 			_stopwatchTimeCostNs = stopwatch.GetElapsedNanoSeconds() / iterations;
-			Console.WriteLine("Stopwatch time penalty: {0}", _stopwatchTimeCostNs);
 		}
 
 		///////////////////////////////////////////////////////////////////////////////////////////////
@@ -219,22 +218,19 @@ namespace Disruptor.Perf
 				ValueEntry entry = producerBarrier.NextEntry();
 				entry.Value = _stopwatch.GetElapsedNanoSeconds();
 				producerBarrier.Commit(entry);
-				Console.WriteLine("A: Iteration: " + i);
 
 				long pauseStart = _stopwatch.GetElapsedNanoSeconds();
 				while (PAUSE_NANOS > (_stopwatch.GetElapsedNanoSeconds() - pauseStart))
 				{
 					//Busy Spin
 				}
-				Console.WriteLine("C: Iteration: " + i);
 			}
 
 			long expectedSequence = ringBuffer.Cursor;
 			while (stepThreeBatchConsumer.Sequence < expectedSequence)
 			{
-				Console.WriteLine("stepThreeBatchConsumer.Sequence: " + stepThreeBatchConsumer.Sequence + " expectedSequence: " + expectedSequence);
+				//Busy Spin
 			}
-			Console.WriteLine("After batch 3");
 
 			stepOneBatchConsumer.Halt();
 			stepTwoBatchConsumer.Halt();

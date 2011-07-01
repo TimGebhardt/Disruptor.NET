@@ -11,3 +11,6 @@
 /Disruptor.Perf/obj
 /Disruptor.Test/StyleCopViolations.xml
 /Disruptor.Test/PartCover/coverage.xml
+/Disruptor.Perf.Runner/bin
+/Disruptor.Perf.Runner/obj
+*.suo
