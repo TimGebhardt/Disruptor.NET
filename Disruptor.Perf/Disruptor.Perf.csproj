@@ -39,12 +39,22 @@
   <ItemGroup>
     <Compile Include="AssemblyInfo.cs" />
     <Compile Include="Pipeline3StepLatencyPerfTest.cs" />
+    <Compile Include="Support\ExtensionMethods.cs" />
+    <Compile Include="Support\FunctionStep.cs" />
+    <Compile Include="Support\LatencyStepHandler.cs" />
+    <Compile Include="Support\ValueEntry.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Disruptor\Disruptor.csproj">
       <Project>{9EBDC462-73AA-4A6E-9030-AE0A2E823253}</Project>
       <Name>Disruptor</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Support" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="app.config" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
 </Project>
