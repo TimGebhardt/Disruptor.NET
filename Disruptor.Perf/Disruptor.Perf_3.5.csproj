@@ -39,6 +39,7 @@
     <Reference Include="System.Core">
       <RequiredTargetFramework>3.5</RequiredTargetFramework>
     </Reference>
+    <Reference Include="System.Threading" />
     <Reference Include="System.Xml" />
     <Reference Include="System.Xml.Linq">
       <RequiredTargetFramework>3.5</RequiredTargetFramework>
@@ -47,12 +48,20 @@
   <ItemGroup>
     <Compile Include="AssemblyInfo.cs" />
     <Compile Include="Pipeline3StepLatencyPerfTest.cs" />
+    <Compile Include="Support\ExtensionMethods.cs" />
+    <Compile Include="Support\FunctionStep.cs" />
+    <Compile Include="Support\LatencyStepHandler.cs" />
+    <Compile Include="Support\LatencyStepQueueConsumer.cs" />
+    <Compile Include="Support\ValueEntry.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Disruptor\Disruptor_3.5.csproj">
       <Project>{FAEB6D38-1235-4DCA-9646-8170188006CA}</Project>
       <Name>Disruptor_3.5</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Support" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.Targets" />
 </Project>

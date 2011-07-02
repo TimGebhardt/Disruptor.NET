@@ -79,12 +79,16 @@
     <Compile Include="IRingBuffer.cs" />
     <Compile Include="ISequenceTrackingHandler.cs" />
     <Compile Include="IWaitStrategy.cs" />
+    <Compile Include="MemoryLayout\CacheLinePadding.cs" />
+    <Compile Include="MemoryLayout\CacheLineStorageBool.cs" />
+    <Compile Include="MemoryLayout\CacheLineStorageLong.cs" />
     <Compile Include="NoOpConsumer.cs" />
     <Compile Include="RingBuffer.cs" />
     <Compile Include="Util.cs" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Collections" />
+    <Folder Include="MemoryLayout" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.Targets" />
 </Project>
