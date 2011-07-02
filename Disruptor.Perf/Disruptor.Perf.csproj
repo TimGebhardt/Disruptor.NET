@@ -43,6 +43,7 @@
     <Compile Include="Support\ExtensionMethods.cs" />
     <Compile Include="Support\FunctionEntry.cs" />
     <Compile Include="Support\FunctionHandler.cs" />
+    <Compile Include="Support\FunctionQueueConsumer.cs" />
     <Compile Include="Support\FunctionStep.cs" />
     <Compile Include="Support\LatencyStepHandler.cs" />
     <Compile Include="Support\LatencyStepQueueConsumer.cs" />

@@ -30,7 +30,6 @@ namespace Disruptor.Perf.Support
 			stepThreeCounter = 0L;
 		}
 
-
 		public void OnAvailable(FunctionEntry entry)
 		{
 			switch (functionStep)
