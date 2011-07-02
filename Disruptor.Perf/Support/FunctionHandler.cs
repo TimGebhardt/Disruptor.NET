@@ -44,7 +44,7 @@ namespace Disruptor.Perf.Support
 					break;
 
 				case FunctionStep.THREE:
-					if((entry.StepTwoResult & 4L) & 4L)
+					if((entry.StepTwoResult & 4L) == 4L)
 						stepThreeCounter++;
 					break;
 			}

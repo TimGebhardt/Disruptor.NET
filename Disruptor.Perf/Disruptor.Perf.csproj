@@ -37,6 +37,7 @@
     <Reference Include="System" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AbstractPerfTestQueueVsDisruptor.cs" />
     <Compile Include="AssemblyInfo.cs" />
     <Compile Include="Pipeline3StepLatencyPerfTest.cs" />
     <Compile Include="Support\ExtensionMethods.cs" />
