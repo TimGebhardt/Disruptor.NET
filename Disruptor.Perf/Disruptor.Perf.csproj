@@ -42,6 +42,7 @@
     <Compile Include="Support\ExtensionMethods.cs" />
     <Compile Include="Support\FunctionStep.cs" />
     <Compile Include="Support\LatencyStepHandler.cs" />
+    <Compile Include="Support\LatencyStepQueueConsumer.cs" />
     <Compile Include="Support\ValueEntry.cs" />
   </ItemGroup>
   <ItemGroup>

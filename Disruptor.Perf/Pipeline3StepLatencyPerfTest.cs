@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using NUnit.Framework;
@@ -73,7 +75,7 @@ namespace Disruptor.Perf
 	{
 		private static int NUM_CONSUMERS = 3;
 		private static int SIZE = 1024*32;
-		private static long ITERATIONS = 1000 * 1000 * 50;
+		private static long ITERATIONS = 1000 * 1000; // * 50;
 		private static long PAUSE_NANOS = 1000;
 		private Histogram _histogram;
 		
@@ -94,6 +96,15 @@ namespace Disruptor.Perf
 		private readonly BatchConsumer<ValueEntry> stepThreeBatchConsumer;
 		private readonly IProducerBarrier<ValueEntry> producerBarrier;
 		private readonly Stopwatch _stopwatch = new Stopwatch();
+		
+		//Queue comparison objects
+		private BlockingCollection<long> stepOneQueue;
+		private BlockingCollection<long> stepTwoQueue;
+		private BlockingCollection<long> stepThreeQueue;
+		
+		private LatencyStepQueueConsumer stepOneQueueConsumer;
+		private LatencyStepQueueConsumer stepTwoQueueConsumer;
+		private LatencyStepQueueConsumer stepThreeQueueConsumer;
 
 		public Pipeline3StepLatencyPerfTest()
 		{
@@ -117,6 +128,17 @@ namespace Disruptor.Perf
 			stepThreeBatchConsumer = new BatchConsumer<ValueEntry>(stepThreeConsumerBarrier, stepThreeFunctionHandler);
 
 			producerBarrier = ringBuffer.CreateProducerBarrier(stepThreeBatchConsumer);
+			
+			stepOneQueue = new BlockingCollection<long>(SIZE);
+			stepTwoQueue = new BlockingCollection<long>(SIZE);
+			stepThreeQueue = new BlockingCollection<long>(SIZE);
+		
+			stepOneQueueConsumer = new LatencyStepQueueConsumer(
+				FunctionStep.ONE, stepOneQueue, stepTwoQueue, _histogram, _stopwatchTimeCostNs, _stopwatch);
+			stepTwoQueueConsumer = new LatencyStepQueueConsumer(
+				FunctionStep.TWO, stepTwoQueue, stepThreeQueue, _histogram, _stopwatchTimeCostNs, _stopwatch);
+			stepThreeQueueConsumer = new LatencyStepQueueConsumer(
+				FunctionStep.THREE, stepThreeQueue, null, _histogram, _stopwatchTimeCostNs, _stopwatch);
 		}
 		
 		private void InitHistogram()
@@ -135,7 +157,7 @@ namespace Disruptor.Perf
 		
 		private void InitStopwatchTimeCostNs()
 		{
-            long iterations = 10000000;
+            long iterations = 10000; //10000000;
 			var stopwatch = new Stopwatch();
 			stopwatch.Start();
 			
@@ -154,45 +176,31 @@ namespace Disruptor.Perf
 			_stopwatchTimeCostNs = stopwatch.GetElapsedNanoSeconds() / iterations;
 		}
 
-		///////////////////////////////////////////////////////////////////////////////////////////////
-
-		//private  BlockingQueue<Long> stepOneQueue = new ArrayBlockingQueue<Long>(SIZE);
-		//private  BlockingQueue<Long> stepTwoQueue = new ArrayBlockingQueue<Long>(SIZE);
-		//private  BlockingQueue<Long> stepThreeQueue = new ArrayBlockingQueue<Long>(SIZE);
-
-		//private  LatencyStepQueueConsumer stepOneQueueConsumer =
-		//    new LatencyStepQueueConsumer(FunctionStep.ONE, stepOneQueue, stepTwoQueue, histogram, nanoTimeCost);
-		//private  LatencyStepQueueConsumer stepTwoQueueConsumer =
-		//    new LatencyStepQueueConsumer(FunctionStep.TWO, stepTwoQueue, stepThreeQueue, histogram, nanoTimeCost);
-		//private  LatencyStepQueueConsumer stepThreeQueueConsumer =
-		//    new LatencyStepQueueConsumer(FunctionStep.THREE, stepThreeQueue, null, histogram, nanoTimeCost);
-
 		[Test]
 		public void ShouldCompareDisruptorVsQueues()
 		{
 			int RUNS = 3;
 
+			_stopwatch.Start();
 			for (int i = 0; i < RUNS; i++)
 			{
 				System.GC.Collect();
 
 				_histogram.Clear();
-				_stopwatch.Start();
 				RunDisruptorPass();
-				_stopwatch.Stop();
 				Assert.AreEqual(ITERATIONS, _histogram.Count);
 				var disruptorMeanLatency = _histogram.CalculateMean();
 				Console.WriteLine("{0} run {1} Disruptor {2}", GetType().Name, i, _histogram);
 				DumpHistogram(Console.Out);
 
-				//histogram.clear();
-				//    runQueuePass();
-				//     assertThat(Long.valueOf(histogram.getCount()), is(Long.valueOf(ITERATIONS)));
-				//           BigDecimal queueMeanLatency = histogram.getMean();
-				//      System.out.format("%s run %d Queues %s\n", getClass().getSimpleName(), Long.valueOf(i), histogram);
-				//     dumpHistogram(System.out);
+				_histogram.Clear();
+				RunQueuePass();
+				Assert.AreEqual(ITERATIONS, _histogram.Count);
+				decimal queueMeanLatency = _histogram.CalculateMean();
+				Console.WriteLine("{0} run {1} Queue {2}\n", GetType().Name, i, _histogram);
+				DumpHistogram(Console.Out);
 
-				//    assertTrue(queueMeanLatency.compareTo(disruptorMeanLatency) > 0);
+				Assert.IsTrue(queueMeanLatency > disruptorMeanLatency);
 			}
 		}
 
@@ -240,41 +248,39 @@ namespace Disruptor.Perf
 			thread1.Join();
 		}
 
-		//private void runQueuePass() throws Exception
-		//{
-		//    stepThreeQueueConsumer.reset();
+		private void RunQueuePass() 
+		{
+		    stepThreeQueueConsumer.Reset();
+		    
+		    CancellationTokenSource ts = new CancellationTokenSource();
+		    CancellationToken ct = ts.Token;
+		    Task.Factory.StartNew(stepOneQueueConsumer.Run, ct);
+		    Task.Factory.StartNew(stepTwoQueueConsumer.Run, ct);
+		    Task.Factory.StartNew(stepThreeQueueConsumer.Run, ct);
 
-		//    Future[] futures = new Future[NUM_CONSUMERS];
-		//    futures[0] = EXECUTOR.submit(stepOneQueueConsumer);
-		//    futures[1] = EXECUTOR.submit(stepTwoQueueConsumer);
-		//    futures[2] = EXECUTOR.submit(stepThreeQueueConsumer);
+		    for (long i = 0; i < ITERATIONS; i++)
+		    {
+		    	stepOneQueue.Add(_stopwatch.GetElapsedNanoSeconds());
 
-		//    for (long i = 0; i < ITERATIONS; i++)
-		//    {
-		//        stepOneQueue.put(Long.valueOf(sw.ElapsedTicks));
+		    	long pauseStart = _stopwatch.GetElapsedNanoSeconds();
+		    	while (PAUSE_NANOS > (_stopwatch.GetElapsedNanoSeconds() -  pauseStart))
+		        {
+		            // busy spin
+		        }
+		    }
 
-		//        long pauseStart = sw.ElapsedTicks;
-		//        while (PAUSE_NANOS > (sw.ElapsedTicks -  pauseStart))
-		//        {
-		//            // busy spin
-		//        }
-		//    }
+		    long expectedSequence = ITERATIONS - 1;
+		    while (stepThreeQueueConsumer.GetSequence() < expectedSequence)
+		    {
+		        // busy spin
+		    }
 
-		//     long expectedSequence = ITERATIONS - 1;
-		//    while (stepThreeQueueConsumer.getSequence() < expectedSequence)
-		//    {
-		//        // busy spin
-		//    }
+		    stepOneQueueConsumer.Halt();
+		    stepTwoQueueConsumer.Halt();
+		    stepThreeQueueConsumer.Halt();
 
-		//    stepOneQueueConsumer.halt();
-		//    stepTwoQueueConsumer.halt();
-		//    stepThreeQueueConsumer.halt();
-
-		//    for (Future future : futures)
-		//    {
-		//        future.cancel(true);
-		//    }
-		//}
+		    ts.Cancel(true);
+		}
 	}
 	
 	internal class FunctionEntryFactory : IEntryFactory<FunctionEntry>
