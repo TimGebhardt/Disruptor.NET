@@ -48,9 +48,12 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AbstractPerfTestQueueVsDisruptor.cs" />
     <Compile Include="AssemblyInfo.cs" />
     <Compile Include="Pipeline3StepLatencyPerfTest.cs" />
     <Compile Include="Support\ExtensionMethods.cs" />
+    <Compile Include="Support\FunctionEntry.cs" />
+    <Compile Include="Support\FunctionHandler.cs" />
     <Compile Include="Support\FunctionStep.cs" />
     <Compile Include="Support\LatencyStepHandler.cs" />
     <Compile Include="Support\LatencyStepQueueConsumer.cs" />
