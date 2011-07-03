@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
@@ -66,7 +67,7 @@ namespace Disruptor.Perf
 	{
 	    private static int NUM_CONSUMERS = 3;
 	    private static int SIZE = 1024 * 32;
-	    private static long ITERATIONS = 1000 * 1000;// * 500;
+	    private static long ITERATIONS = 1000 * 1000 * 500;
 	
 	    private static long OPERAND_TWO_INITIAL_VALUE = 777L;
 	    private long expectedResult;
@@ -110,21 +111,20 @@ namespace Disruptor.Perf
 		
 		    producerBarrier = ringBuffer.CreateProducerBarrier(stepThreeBatchConsumer);	    	
 	    }
-	
-	    ///////////////////////////////////////////////////////////////////////////////////////////////
-	
-//	    private final BlockingQueue<long[]> stepOneQueue = new ArrayBlockingQueue<long[]>(SIZE);
-//	    private final BlockingQueue<Long> stepTwoQueue = new ArrayBlockingQueue<Long>(SIZE);
-//	    private final BlockingQueue<Long> stepThreeQueue = new ArrayBlockingQueue<Long>(SIZE);
-//	
-//	    private final FunctionQueueConsumer stepOneQueueConsumer =
-//	        new FunctionQueueConsumer(FunctionStep.ONE, stepOneQueue, stepTwoQueue, stepThreeQueue);
-//	    private final FunctionQueueConsumer stepTwoQueueConsumer =
-//	        new FunctionQueueConsumer(FunctionStep.TWO, stepOneQueue, stepTwoQueue, stepThreeQueue);
-//	    private final FunctionQueueConsumer stepThreeQueueConsumer =
-//	        new FunctionQueueConsumer(FunctionStep.THREE, stepOneQueue, stepTwoQueue, stepThreeQueue);
-	
-	    ///////////////////////////////////////////////////////////////////////////////////////////////
+	    
+	    private void InitQueueObjects()
+	    {
+		    stepOneQueue = new BlockingCollection<long[]>(SIZE);
+		    stepTwoQueue = new BlockingCollection<long>(SIZE);
+		    stepThreeQueue = new BlockingCollection<long>(SIZE);
+		
+		    stepOneQueueConsumer = new FunctionQueueConsumer(
+		    	FunctionStep.ONE, stepOneQueue, stepTwoQueue, stepThreeQueue);
+		    stepTwoQueueConsumer = new FunctionQueueConsumer(
+		    	FunctionStep.TWO, stepOneQueue, stepTwoQueue, stepThreeQueue);
+		    stepThreeQueueConsumer = new FunctionQueueConsumer(
+		    	FunctionStep.THREE, stepOneQueue, stepTwoQueue, stepThreeQueue);
+	    }
 	
 	    //Disruptor objects
 	    private IRingBuffer<FunctionEntry> ringBuffer;
@@ -142,8 +142,16 @@ namespace Disruptor.Perf
 	    private BatchConsumer<FunctionEntry> stepThreeBatchConsumer;
 	
 	    private IProducerBarrier<FunctionEntry> producerBarrier;
+
+		//Queue objects
+	    private BlockingCollection<long[]> stepOneQueue;
+	    private BlockingCollection<long> stepTwoQueue;
+	    private BlockingCollection<long> stepThreeQueue;
 	
-	    ///////////////////////////////////////////////////////////////////////////////////////////////
+	    private FunctionQueueConsumer stepOneQueueConsumer;
+	    private FunctionQueueConsumer stepTwoQueueConsumer;
+	    private FunctionQueueConsumer stepThreeQueueConsumer;
+	    
 	
 	    [Test]
 	    public void ShouldCompareDisruptorVsQueuesPublic()
@@ -155,6 +163,7 @@ namespace Disruptor.Perf
 	    {
 	    	InitExpectedResult();
 	    	InitDisruptorObjects();
+	    	InitQueueObjects();
 	        TestImplementations();
 	    }
 	
@@ -198,45 +207,44 @@ namespace Disruptor.Perf
 	
 	    protected override double RunQueuePass(int passNumber)
 	    {
-	    	return 0.0;
-//	        stepThreeQueueConsumer.reset();
-//	
-//	        Future[] futures = new Future[NUM_CONSUMERS];
-//	        futures[0] = EXECUTOR.submit(stepOneQueueConsumer);
-//	        futures[1] = EXECUTOR.submit(stepTwoQueueConsumer);
-//	        futures[2] = EXECUTOR.submit(stepThreeQueueConsumer);
-//	
-//	        long start = System.currentTimeMillis();
-//	
-//	        long operandTwo = OPERAND_TWO_INITIAL_VALUE;
-//	        for (long i = 0; i < ITERATIONS; i++)
-//	        {
-//	            long[] values = new long[2];
-//	            values[0] = i;
-//	            values[1] = operandTwo--;
-//	            stepOneQueue.put(values);
-//	        }
-//	
-//	        final long expectedSequence = ITERATIONS - 1;
-//	        while (stepThreeQueueConsumer.getSequence() < expectedSequence)
-//	        {
-//	            // busy spin
-//	        }
-//	
-//	        long opsPerSecond = (ITERATIONS * 1000L) / (System.currentTimeMillis() - start);
-//	
-//	        stepOneQueueConsumer.halt();
-//	        stepTwoQueueConsumer.halt();
-//	        stepThreeQueueConsumer.halt();
-//	
-//	        for (Future future : futures)
-//	        {
-//	            future.cancel(true);
-//	        }
-//	
-//	        Assert.assertEquals(expectedResult, stepThreeQueueConsumer.getStepThreeCounter());
-//	
-//	        return opsPerSecond;
+	        stepThreeQueueConsumer.Reset();
+	
+	        CancellationTokenSource ts = new CancellationTokenSource();
+	        CancellationToken ct = ts.Token;
+	        Task.Factory.StartNew(stepOneQueueConsumer.Run, ct);
+	        Task.Factory.StartNew(stepTwoQueueConsumer.Run, ct);
+	        Task.Factory.StartNew(stepThreeQueueConsumer.Run, ct);
+	        
+	        var stopwatch = new Stopwatch();
+	        stopwatch.Start();
+	
+	        long operandTwo = OPERAND_TWO_INITIAL_VALUE;
+	        for (long i = 0; i < ITERATIONS; i++)
+	        {
+	            long[] values = new long[2];
+	            values[0] = i;
+	            values[1] = operandTwo--;
+	            stepOneQueue.Add(values);
+	        }
+	
+	        long expectedSequence = ITERATIONS - 1;
+	        while (stepThreeQueueConsumer.Sequence < expectedSequence)
+	        {
+	            // busy spin
+	        }
+	
+	        stopwatch.Stop();
+	        double opsPerSecond = ITERATIONS / stopwatch.Elapsed.TotalSeconds;
+	
+	        stepOneQueueConsumer.Halt();
+	        stepTwoQueueConsumer.Halt();
+	        stepThreeQueueConsumer.Halt();
+	
+	        ts.Cancel(true);
+	
+	        Assert.AreEqual(expectedResult, stepThreeQueueConsumer.StepThreeCounter);
+	
+	        return opsPerSecond;
 	    }
 	}
 
