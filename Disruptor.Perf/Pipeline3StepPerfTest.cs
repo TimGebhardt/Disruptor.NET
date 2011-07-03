@@ -3,8 +3,9 @@ using System.Collections.Concurrent;
 using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
-using NUnit.Framework;
+
 using Disruptor.Perf.Support;
+using NUnit.Framework;
 
 namespace Disruptor.Perf
 {
@@ -95,7 +96,7 @@ namespace Disruptor.Perf
 	    {
 	    	ringBuffer = new RingBuffer<FunctionEntry>(new FunctionEntryFactory(), SIZE,
 	    	                                           new SingleThreadedStrategy(),
-	    	                                           new BusySpinStrategy<FunctionEntry>());
+	    	                                           new YieldingStrategy<FunctionEntry>());
 		
 		    stepOneConsumerBarrier = ringBuffer.CreateConsumerBarrier();
 		    stepOneFunctionHandler = new FunctionHandler(FunctionStep.ONE);
