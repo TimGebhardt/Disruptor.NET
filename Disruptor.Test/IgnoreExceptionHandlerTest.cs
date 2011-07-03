@@ -16,7 +16,7 @@ namespace Disruptor.Test
 	    public void ShouldHandleAndIgnoreException()
 	    {
 	        Exception ex = new Exception();
-	        IEntry entry = new TestEntry();
+	        Entry entry = new TestEntry();
 	
 	        ILog logger = _mocks.StrictMock<ILog>();
 	        

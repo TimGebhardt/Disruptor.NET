@@ -6,7 +6,7 @@ namespace Disruptor
         long Cursor { get; }
     }
 
-    public interface IRingBuffer<T> : IRingBuffer where T : IEntry
+    public interface IRingBuffer<T> : IRingBuffer where T : Entry
     {
         IConsumerBarrier<T> CreateConsumerBarrier(params IConsumer[] consumersToTrack);
         IProducerBarrier<T> CreateProducerBarrier(params IConsumer[] consumersToTrack);

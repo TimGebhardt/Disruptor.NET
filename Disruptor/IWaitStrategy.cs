@@ -10,7 +10,7 @@ namespace Disruptor
 
 
 {
-    public interface IWaitStrategy<T> where T : IEntry
+    public interface IWaitStrategy<T> where T : Entry
     {
         /**
      * Wait for the given sequence to be available for consumption in a {@link RingBuffer}
@@ -57,7 +57,7 @@ namespace Disruptor
      * This strategy should be used when performance and low-latency are not as important as CPU resource.
      */
 
-    public class BlockingStrategy<T> : IWaitStrategy<T> where T : IEntry
+    public class BlockingStrategy<T> : IWaitStrategy<T> where T : Entry
     {
         private object _lock = new object();
         AutoResetEvent _waithandle = new AutoResetEvent(false);
@@ -170,7 +170,7 @@ namespace Disruptor
      * This strategy is a good compromise between performance and CPU resource.
      */
 
-    public class YieldingStrategy<T> : IWaitStrategy<T> where T : IEntry
+    public class YieldingStrategy<T> : IWaitStrategy<T> where T : Entry
     {
         private readonly Stopwatch _timer = Stopwatch.StartNew();
 
@@ -271,7 +271,7 @@ namespace Disruptor
      * used when threads can be bound to specific CPU cores.
      */
 
-    public class BusySpinStrategy<T> : IWaitStrategy<T> where T : IEntry
+    public class BusySpinStrategy<T> : IWaitStrategy<T> where T : Entry
     {
         private readonly Stopwatch _timer = Stopwatch.StartNew();
 

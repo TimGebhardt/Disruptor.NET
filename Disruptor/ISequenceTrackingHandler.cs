@@ -9,7 +9,7 @@
 
 namespace Disruptor
 {
-    public interface ISequenceTrackingHandler<T> : IBatchHandler<T> where T : IEntry
+    public interface ISequenceTrackingHandler<T> : IBatchHandler<T> where T : Entry
     {
         /**
      * Call by the {@link BatchConsumer} to setup the callback.

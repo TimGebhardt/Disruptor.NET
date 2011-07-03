@@ -59,17 +59,16 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="AbstractEntry.cs" />
     <Compile Include="AlertException.cs" />
     <Compile Include="AssemblyInfo.cs" />
     <Compile Include="BatchConsumer.cs" />
     <Compile Include="Collections\Histogram.cs" />
+    <Compile Include="Entry.cs" />
     <Compile Include="FatalExceptionHandler.cs" />
     <Compile Include="IBatchHandler.cs" />
     <Compile Include="IClaimStrategy.cs" />
     <Compile Include="IConsumer.cs" />
     <Compile Include="IConsumerBarrier.cs" />
-    <Compile Include="IEntry.cs" />
     <Compile Include="IEntryFactory.cs" />
     <Compile Include="IEntryTranslator.cs" />
     <Compile Include="IExceptionHandler.cs" />

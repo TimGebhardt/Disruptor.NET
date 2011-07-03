@@ -6,7 +6,7 @@
 
 namespace Disruptor
 {
-    public interface IProducerBarrier<T> where T : IEntry
+    public interface IProducerBarrier<T> where T : Entry
     {
         T NextEntry();
         void Commit(T entry);

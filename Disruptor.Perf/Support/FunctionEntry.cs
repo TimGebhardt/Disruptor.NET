@@ -10,7 +10,7 @@ using System;
 
 namespace Disruptor.Perf.Support
 {
-	public class FunctionEntry : AbstractEntry
+	public class FunctionEntry : Entry
 	{
 		public long OperandOne { get; set; }
 		public long OperandTwo { get; set; }

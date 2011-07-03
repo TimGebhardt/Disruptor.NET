@@ -15,7 +15,7 @@ namespace Disruptor.Test
 	    public void ShouldHandleFatalException()
 	    {
 	        Exception causeException = new Exception();
-	        IEntry entry = new TestEntry();
+	        Entry entry = new TestEntry();
 	
 	        ILog logger = _mocks.DynamicMock<ILog>();
 	        

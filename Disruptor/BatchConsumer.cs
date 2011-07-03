@@ -12,7 +12,7 @@ using Disruptor.MemoryLayout;
 namespace Disruptor
 {
     public class BatchConsumer<T> : IConsumer
-        where T : IEntry
+        where T : Entry
     {
     	private CacheLineStorageBool _running = new CacheLineStorageBool(true);
     	private CacheLineStorageLong _sequence = new CacheLineStorageLong(-1L);

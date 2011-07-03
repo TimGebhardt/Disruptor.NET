@@ -3,7 +3,7 @@ using Disruptor;
 
 namespace Disruptor.Perf.Support
 {
-	public class ValueEntry : AbstractEntry
+	public class ValueEntry : Entry
 	{
 		public long Value { get; set; }
 	}

@@ -6,7 +6,7 @@
 
 namespace Disruptor
 {
-    public interface IBatchHandler<T> where T : IEntry
+    public interface IBatchHandler<T> where T : Entry
     {
         /**
      * Called when a publisher has committed an {@link IEntry} to the {@link RingBuffer}

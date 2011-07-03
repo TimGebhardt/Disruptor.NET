@@ -23,7 +23,7 @@ namespace Disruptor
 			_log = log;
 		}
 
-        public void Handle(Exception ex, IEntry currentEntry)
+        public void Handle(Exception ex, Entry currentEntry)
         {
             _log.Fatal("Exception processing: " + currentEntry, ex);
 

@@ -6,7 +6,7 @@
 
 namespace Disruptor
 {
-    public interface IEntryTranslator<T> where T : IEntry
+    public interface IEntryTranslator<T> where T : Entry
     {
         /**
      * Translate a data representation into fields set in given {@link IEntry}

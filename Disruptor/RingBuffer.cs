@@ -10,7 +10,7 @@ using Disruptor.MemoryLayout;
 
 namespace Disruptor
 {
-    public class RingBuffer<T> : IRingBuffer<T> where T : IEntry
+    public class RingBuffer<T> : IRingBuffer<T> where T : Entry
     {
         public const long InitialCursorValue = -1L;
         
@@ -83,7 +83,7 @@ namespace Disruptor
             }
         }
 
-        private class ConsumerTrackingConsumerBarrier<T> : IConsumerBarrier<T> where T : IEntry
+        private class ConsumerTrackingConsumerBarrier<T> : IConsumerBarrier<T> where T : Entry
         {
             public long p1, p2, p3, p4, p5, p6, p7; // cache line padding
             private readonly IConsumer[] _consumers;

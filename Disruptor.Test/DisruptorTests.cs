@@ -49,7 +49,7 @@ namespace Disruptor.Test
         }
     }
 
-    public class TestClass : AbstractEntry
+    public class TestClass : Entry
     {
         public double Value;
         public string Stuff;

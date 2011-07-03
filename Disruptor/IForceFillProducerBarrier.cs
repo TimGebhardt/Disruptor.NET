@@ -8,7 +8,7 @@
 
 namespace Disruptor
 {
-    public interface IForceFillProducerBarrier<T> where T : IEntry
+    public interface IForceFillProducerBarrier<T> where T : Entry
     {
         /**
      * Claim a specific sequence in the {@link RingBuffer} when only one producer is involved.

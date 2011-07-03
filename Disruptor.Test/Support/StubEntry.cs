@@ -2,7 +2,7 @@
 
 namespace Disruptor.Test.Support
 {
-    public class StubEntry : AbstractEntry
+    public class StubEntry : Entry
     {
         public int Value { get; set; }
         public string teststring { get; set; }

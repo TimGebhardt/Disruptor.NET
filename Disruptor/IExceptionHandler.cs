@@ -8,6 +8,6 @@ namespace Disruptor
 {
     public interface IExceptionHandler
     {
-        void Handle(Exception ex, IEntry currentEntry);
+        void Handle(Exception ex, Entry currentEntry);
     }
 }

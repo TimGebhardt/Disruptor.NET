@@ -2,7 +2,7 @@
 
 namespace Disruptor.Test.Support
 {
-	public class TestEntry : AbstractEntry
+	public class TestEntry : Entry
 	{
 	    public override string ToString()
 	    {

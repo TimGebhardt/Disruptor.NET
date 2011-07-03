@@ -17,7 +17,7 @@ namespace Disruptor
         void ClearAlert();
     }
 
-    public interface IConsumerBarrier<T> : IConsumerBarrier where T : IEntry
+    public interface IConsumerBarrier<T> : IConsumerBarrier where T : Entry
     {
         T GetEntry(long sequence);
     }
