@@ -8,8 +8,8 @@ namespace Disruptor.Perf
 	    protected void TestImplementations()
 	    {
 	        int RUNS = 3;
-	        long disruptorOps = 0L;
-	        long queueOps = 0L;
+	        double disruptorOps = 0.0;
+	        double queueOps = 0.0;
 	
 	        for (int i = 0; i < RUNS; i++)
 	        {
@@ -25,15 +25,15 @@ namespace Disruptor.Perf
 	    }
 	
 	
-	    public static void PrintResults(Type testType, long disruptorOps, long queueOps, int run)
+	    public static void PrintResults(Type testType, double disruptorOps, double queueOps, int run)
 	    {
-	    	Console.WriteLine("\n{0} OpsPerSecond run {1}: BlockingQueues={2}, Disruptor={3}\n",
+	    	Console.WriteLine("\n{0} OpsPerSecond run {1}: BlockingQueues={2:0.##}, Disruptor={3:0.##}\n",
 	    	                  testType.Name, run, queueOps, disruptorOps);
 	    }
 	
-	    protected abstract long RunQueuePass(int passNumber);
+	    protected abstract double RunQueuePass(int passNumber);
 	
-	    protected abstract long RunDisruptorPass(int passNumber);
+	    protected abstract double RunDisruptorPass(int passNumber);
 	
 	    protected abstract void ShouldCompareDisruptorVsQueues();
 	}
