@@ -14,3 +14,5 @@
 /Disruptor.Perf.Runner/bin
 /Disruptor.Perf.Runner/obj
 *.suo
+/Disruptor/StyleCop.Cache
+/Disruptor/StyleCopViolations.xml

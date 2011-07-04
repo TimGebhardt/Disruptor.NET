@@ -22,10 +22,21 @@ namespace Disruptor
 			get { return _sequence.Data; }
 		}
 		
+		private IExceptionHandler _exceptionHandler = new FatalExceptionHandler();
+		public IExceptionHandler ExceptionHandler 
+		{
+			get { return _exceptionHandler; }
+			set 
+			{
+				if (value == null)
+            		throw new ArgumentNullException("value", "ExceptionHandler cannot be null");
+            	_exceptionHandler = value;
+			}
+		}
+		
         private readonly IConsumerBarrier<T> _consumerBarrier;
         private readonly IBatchHandler<T> _handler;
         private readonly bool _noSequenceTracker;
-        private IExceptionHandler _exceptionHandler = new FatalExceptionHandler();
 
         public BatchConsumer(IConsumerBarrier<T> consumerBarrier,
                              IBatchHandler<T> handler)
@@ -45,16 +56,6 @@ namespace Disruptor
             entryHandler.SetSequenceTrackerCallback(new SequenceTrackerCallback(this));
         }
 
-        public void SetExceptionHandler(IExceptionHandler exceptionHandler)
-        {
-            if (null == exceptionHandler)
-            {
-                throw new NullReferenceException();
-            }
-
-            _exceptionHandler = exceptionHandler;
-        }
-
         public IConsumerBarrier<T> GetConsumerBarrier()
         {
             return _consumerBarrier;
@@ -66,7 +67,12 @@ namespace Disruptor
             _consumerBarrier.Alert();
         }
 
-// It is ok to have another thread rerun this method after a halt().
+		/// <summary>
+		/// Runs this batch consumer.
+		/// </summary>
+		/// <remarks>
+		/// It is ok to have another thread rerun this method after a Halt().
+		/// </remarks>
         public void Run()
         {
             _running.Data = true;
@@ -92,6 +98,9 @@ namespace Disruptor
 
                     _handler.OnEndOfBatch();
                 }
+                //TODO: Exception handling in Java can be fast if you don't grab a stack trace,
+                //But it's really slow in .NET.  Figure out a way to port this to work better in
+                //.NET
                 catch (AlertException)
                 {
                     // Wake up from blocking wait and check if we should continue to run

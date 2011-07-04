@@ -3,12 +3,11 @@
  * <P>
  * It does not fill in a stack trace for performance reasons.
  */
-//@SuppressWarnings("serial")
-
-using System;
 
 namespace Disruptor
 {
+	using System;
+	
     public class AlertException : Exception
     {
         public static readonly AlertException ALERT_EXCEPTION = new AlertException();

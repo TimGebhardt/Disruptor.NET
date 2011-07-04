@@ -83,22 +83,20 @@ namespace Disruptor
             }
         }
 
-        private class ConsumerTrackingConsumerBarrier<T> : IConsumerBarrier<T> where T : Entry
+        private class ConsumerTrackingConsumerBarrier<TEntry> : IConsumerBarrier<TEntry> where TEntry : Entry
         {
-            public long p1, p2, p3, p4, p5, p6, p7; // cache line padding
             private readonly IConsumer[] _consumers;
-            private volatile bool _alerted;
-            public long p8, p9, p10, p11, p12, p13, p14; // cache line padding
+            private CacheLineStorageBool _alerted;
 
-            private readonly RingBuffer<T> _ringBuffer;
+            private readonly RingBuffer<TEntry> _ringBuffer;
 
-            public ConsumerTrackingConsumerBarrier(RingBuffer<T> ringBuffer, IConsumer[] consumers)
+            public ConsumerTrackingConsumerBarrier(RingBuffer<TEntry> ringBuffer, IConsumer[] consumers)
             {
                 _ringBuffer = ringBuffer;
                 this._consumers = consumers;
             }
             
-            public T GetEntry(long sequence)
+            public TEntry GetEntry(long sequence)
             {
                 unchecked
                 {
@@ -127,20 +125,20 @@ namespace Disruptor
 
             public bool IsAlerted()
             {
-                return _alerted;
+                return _alerted.Data;
             }
 
 
             public void Alert()
             {
-                _alerted = true;
+                _alerted.Data = true;
                 _ringBuffer._waitStrategy.SignalAll();
             }
 
 
             public void ClearAlert()
             {
-                _alerted = false;
+                _alerted.Data = false;
             }
         }
 

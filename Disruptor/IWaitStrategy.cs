@@ -82,7 +82,7 @@ namespace Disruptor
                             _waithandle.WaitOne();
                         }
                     }
-                    catch (Exception e)
+                    catch (Exception)
                     {
                     }
                 }
